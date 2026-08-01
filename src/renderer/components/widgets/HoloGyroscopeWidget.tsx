@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../common/GlassCard';
 import { WidgetHeader } from '../common/WidgetHeader';
-import { Compass, Disc, ShieldCheck } from 'lucide-react';
+import { Compass, ShieldCheck } from 'lucide-react';
 
 export const HoloGyroscopeWidget: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -31,7 +31,7 @@ export const HoloGyroscopeWidget: React.FC = () => {
       ctx.strokeStyle = '#00F0FF';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(0, 0, 42, 0, Math.PI * 2);
+      ctx.arc(0, 0, 36, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
@@ -43,7 +43,7 @@ export const HoloGyroscopeWidget: React.FC = () => {
       ctx.strokeStyle = '#FF007F';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(0, 0, 32, 0, Math.PI * 2);
+      ctx.arc(0, 0, 26, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
@@ -55,14 +55,14 @@ export const HoloGyroscopeWidget: React.FC = () => {
       ctx.strokeStyle = '#00FF66';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.arc(0, 0, 18, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
       // Central Gyro Core Node
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
       ctx.fill();
 
       angle1 += 0.02;
@@ -81,40 +81,40 @@ export const HoloGyroscopeWidget: React.FC = () => {
       <WidgetHeader
         icon={Compass}
         prefix="STABILITY CONTROL"
-        title="3D HOLOGRAPHIC GYROSCOPE GIMBAL"
-        badge="GIMBAL LOCK: CLEAR"
+        title="3D GYROSCOPE GIMBAL"
+        badge="GIMBAL: OK"
         badgeColor="green"
       />
 
-      <div className="grid grid-cols-12 gap-3 h-full items-center">
+      <div className="grid grid-cols-12 gap-2 h-full items-center">
         {/* Left: 3D Holographic Gyro Canvas */}
-        <div className="col-span-6 bg-[#121218] border border-[#00F0FF]/30 rounded-xl p-2 flex items-center justify-center h-full">
-          <canvas ref={canvasRef} width={140} height={110} className="w-full h-full object-contain" />
+        <div className="col-span-5 bg-[#121218] border border-[#00F0FF]/30 rounded-lg p-1 flex items-center justify-center h-full">
+          <canvas ref={canvasRef} width={120} height={95} className="w-full h-full object-contain" />
         </div>
 
         {/* Right: Artificial Gravity Telemetry */}
-        <div className="col-span-6 flex flex-col justify-between h-full space-y-1 py-0.5 font-mono text-[10px]">
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 space-y-1">
+        <div className="col-span-7 flex flex-col justify-between h-full space-y-1 py-0.5 font-mono text-[9px]">
+          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 space-y-0.5">
             <div className="text-[#00FF66] font-bold flex justify-between">
               <span>ARTIFICIAL GRAVITY</span>
               <span>1.00G</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-slate-300 text-[8px]">
               <span>RING 1 (XY):</span>
               <span className="font-bold text-[#00F0FF]">ACTIVE</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-slate-300 text-[8px]">
               <span>RING 2 (YZ):</span>
               <span className="font-bold text-[#FF007F]">ACTIVE</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-slate-300 text-[8px]">
               <span>RING 3 (XZ):</span>
               <span className="font-bold text-[#00FF66]">ACTIVE</span>
             </div>
           </div>
 
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 font-mono text-[9px] text-slate-400">
-            SHIP INERTIAL GUIDANCE ENGINE: NOMINAL
+          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 font-mono text-[8px] text-slate-400 truncate">
+            INERTIAL GUIDANCE ENGINE: NOMINAL
           </div>
         </div>
       </div>

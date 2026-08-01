@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../common/GlassCard';
 import { WidgetHeader } from '../common/WidgetHeader';
-import { Compass, Layers, Map } from 'lucide-react';
+import { Layers } from 'lucide-react';
 
 export const TopographicTerrainRadarWidget: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -21,22 +21,21 @@ export const TopographicTerrainRadarWidget: React.FC = () => {
 
       ctx.clearRect(0, 0, w, h);
 
-      const rows = 12;
-      const cols = 16;
+      const rows = 10;
+      const cols = 14;
       const cellW = w / cols;
       const cellH = h / rows;
 
       // Render 3D Wireframe Perspective Grid
-      ctx.strokeStyle = 'rgba(0, 255, 102, 0.4)';
+      ctx.strokeStyle = 'rgba(0, 255, 102, 0.45)';
       ctx.lineWidth = 1;
 
       for (let r = 0; r < rows; r++) {
         ctx.beginPath();
         for (let c = 0; c < cols; c++) {
-          // Dynamic heightmap peaks
-          const height = Math.sin(r * 0.5 + c * 0.4 + scanLine) * 12;
+          const height = Math.sin(r * 0.5 + c * 0.4 + scanLine) * 10;
           const px = c * cellW;
-          const py = r * cellH - height + 15;
+          const py = r * cellH - height + 12;
 
           if (c === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
@@ -65,37 +64,37 @@ export const TopographicTerrainRadarWidget: React.FC = () => {
     <GlassCard>
       <WidgetHeader
         icon={Layers}
-        prefix="TERRAIN SCAN"
-        title="3D TOPOGRAPHIC SURFACE HEIGHTMAP RADAR"
+        prefix="SURFACE RADAR"
+        title="3D TOPOGRAPHIC HEIGHTMAP"
         badge="LV-426 MAPPED"
         badgeColor="green"
       />
 
-      <div className="grid grid-cols-12 gap-3 h-full items-center">
+      <div className="grid grid-cols-12 gap-2 h-full items-center">
         {/* Left: 3D Heightmap Canvas */}
-        <div className="col-span-6 bg-[#121218] border border-[#00FF66]/30 rounded-xl p-2 flex items-center justify-center h-full">
-          <canvas ref={canvasRef} width={140} height={110} className="w-full h-full object-contain" />
+        <div className="col-span-5 bg-[#121218] border border-[#00FF66]/30 rounded-lg p-1 flex items-center justify-center h-full">
+          <canvas ref={canvasRef} width={120} height={95} className="w-full h-full object-contain" />
         </div>
 
         {/* Right: Surface Elevation Telemetry */}
-        <div className="col-span-6 flex flex-col justify-between h-full space-y-1 py-0.5 font-mono text-[10px]">
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 space-y-1">
+        <div className="col-span-7 flex flex-col justify-between h-full space-y-1 py-0.5 font-mono text-[9px]">
+          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 space-y-0.5">
             <div className="text-[#00FF66] font-bold flex justify-between">
               <span>LOCATION</span>
-              <span>LV-426 VALLEY</span>
+              <span>LV-426</span>
             </div>
-            <div className="flex justify-between text-slate-300">
-              <span>PEAK ELEVATION:</span>
+            <div className="flex justify-between text-slate-300 text-[8px]">
+              <span>ELEVATION:</span>
               <span className="font-bold text-white">4,200M</span>
             </div>
-            <div className="flex justify-between text-slate-300">
-              <span>SCAN PLAN:</span>
+            <div className="flex justify-between text-slate-300 text-[8px]">
+              <span>SCANNER:</span>
               <span className="font-bold text-[#FF007F]">SWEEPING</span>
             </div>
           </div>
 
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 font-mono text-[9px] text-slate-400">
-            LANDING ZONE VECTOR: HADLEY VALLEY CLEAR
+          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 font-mono text-[8px] text-slate-400 truncate">
+            LANDING VECTOR: HADLEY VALLEY CLEAR
           </div>
         </div>
       </div>
