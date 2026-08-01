@@ -11,7 +11,7 @@ import { FixedCyberBackground } from './components/common/FixedCyberBackground';
 import { MatrixDigitalRain } from './components/common/MatrixDigitalRain';
 import { QuickLink, DirectiveItem } from './types/hud';
 
-// All 26 Functional Widgets
+// All 27 Functional Widgets
 import { DualMissionClocks } from './components/widgets/DualMissionClocks';
 import { SystemPerformanceHUD } from './components/widgets/SystemPerformanceHUD';
 import { MarketWatchHUD } from './components/widgets/MarketWatchHUD';
@@ -39,6 +39,7 @@ import { AirspaceRadarWidget } from './components/widgets/AirspaceRadarWidget';
 import { TerminalCLIWidget } from './components/widgets/TerminalCLIWidget';
 import { NeuralAIWidget } from './components/widgets/NeuralAIWidget';
 import { VoightKampffWidget } from './components/widgets/VoightKampffWidget';
+import { XenomorphTrackerWidget } from './components/widgets/XenomorphTrackerWidget';
 
 const ReactGridLayout = WidthProvider(RGL);
 
@@ -71,14 +72,15 @@ const DEFAULT_LAYOUT: Layout[] = [
   { i: 'neural_ai', x: 6, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
   { i: 'airspace_radar', x: 0, y: 10, w: 12, h: 2, minW: 6, minH: 2 },
 
-  // ROW 12: VOIGHT-KAMPFF, POMODORO & DIRECTIVES
-  { i: 'voight_kampff', x: 0, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'pomodoro', x: 4, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'directives', x: 8, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  // ROW 12: XENOMORPH TRACKER, VOIGHT-KAMPFF & POMODORO
+  { i: 'xenomorph_tracker', x: 0, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'voight_kampff', x: 4, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'pomodoro', x: 8, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ROW 14: STAGING & AMBIENT AUDIO
-  { i: 'staging', x: 0, y: 14, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'ambient', x: 6, y: 14, w: 6, h: 2, minW: 4, minH: 2 },
+  // ROW 14: DIRECTIVES, STAGING & AMBIENT AUDIO
+  { i: 'directives', x: 0, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'staging', x: 4, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'ambient', x: 8, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
 
   // ROWS 16+: PRODUCTIVITY, MINDSET & GRATITUDE
   { i: 'milestone', x: 0, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
@@ -96,7 +98,7 @@ const MainContent: React.FC = () => {
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
 
   const [layout, setLayout] = useState<Layout[]>(() => {
-    const saved = localStorage.getItem('hud_grid_layout_v5');
+    const saved = localStorage.getItem('hud_grid_layout_v6');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -107,12 +109,12 @@ const MainContent: React.FC = () => {
   const [tasks, setTasks] = useState<DirectiveItem[]>([]);
 
   useEffect(() => {
-    localStorage.setItem('hud_grid_layout_v5', JSON.stringify(layout));
+    localStorage.setItem('hud_grid_layout_v6', JSON.stringify(layout));
   }, [layout]);
 
   const handleResetLayout = () => {
     setLayout(DEFAULT_LAYOUT);
-    localStorage.removeItem('hud_grid_layout_v5');
+    localStorage.removeItem('hud_grid_layout_v6');
   };
 
   const hiddenSet = new Set(settings.hiddenWidgets || []);
@@ -132,6 +134,7 @@ const MainContent: React.FC = () => {
     terminal: <TerminalCLIWidget />,
     neural_ai: <NeuralAIWidget />,
     airspace_radar: <AirspaceRadarWidget />,
+    xenomorph_tracker: <XenomorphTrackerWidget />,
     voight_kampff: <VoightKampffWidget />,
     pomodoro: <PomodoroSprintHUD />,
     directives: <CurrentWeekDirectives onTasksChange={(t) => setTasks(t)} />,

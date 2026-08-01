@@ -1,7 +1,8 @@
-import React from 'react';
-import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary, Eye } from 'lucide-react';
+import React, { useState } from 'react';
+import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary, Eye, ShieldAlert } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
+import { SelfDestructModal } from './SelfDestructModal';
 
 interface HeaderBannerProps {
   onOpenSettings: () => void;
@@ -10,7 +11,8 @@ interface HeaderBannerProps {
 
 export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOpenCommandBar }) => {
   const { settings, updateSettings, colors } = useTheme();
-  const { playToggleSFX } = useCyberSFX();
+  const { playToggleSFX, playClickSFX } = useCyberSFX();
+  const [isSelfDestructOpen, setIsSelfDestructOpen] = useState(false);
 
   const toggleGridLock = () => {
     playToggleSFX();
@@ -32,7 +34,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
       <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 max-w-[1920px] mx-auto pb-10">
         {/* Top Control Bar */}
         <div className="flex items-center justify-between">
-          {/* App Badge, Date & Tyrell Replicant Telemetry */}
+          {/* App Badge, Date & Weyland-Yutani Telemetry */}
           <div className="flex items-center space-x-3">
             <div className="font-mono text-xs font-bold bg-[#121218]/90 border px-3 py-1 rounded shadow-lg flex items-center space-x-2 backdrop-blur-md" style={{ color: colors.primary, borderColor: `${colors.primary}60` }}>
               <span className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse" />
@@ -45,15 +47,25 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()}</span>
             </div>
 
-            {/* Tyrell Corp Replicant Serial Registration Badge */}
-            <div className="hidden lg:flex font-mono text-[10px] text-amber-400 font-bold bg-[#121218]/90 border border-[#FF9900]/40 px-2.5 py-1 rounded shadow-lg items-center space-x-1.5 backdrop-blur-md">
-              <Eye size={12} className="text-[#FF9900]" />
-              <span>TYRELL CORP // MODEL: NEXUS-6 // REPLICANT ID: N6MAA10816</span>
+            {/* Weyland-Yutani Telemetry Badge */}
+            <div className="hidden lg:flex font-mono text-[10px] text-amber-400 font-bold bg-[#121218]/90 border border-[#FFB700]/40 px-2.5 py-1 rounded shadow-lg items-center space-x-1.5 backdrop-blur-md">
+              <ShieldAlert size={12} className="text-[#FF3300]" />
+              <span>WEYLAND-YUTANI CORP // MU/TH/UR 6000 // PRIORITY ONE</span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
+            {/* Emergency Nostromo Self-Destruct Trigger Button */}
+            <button
+              onClick={() => { playClickSFX(); setIsSelfDestructOpen(true); }}
+              className="px-2.5 py-1.5 rounded-lg bg-red-950/90 border border-[#FF3300]/50 text-[#FF3300] hover:bg-red-900/90 font-mono text-xs font-bold transition-all shadow-md backdrop-blur-md flex items-center space-x-1.5"
+              title="USCSS Nostromo Emergency Self-Destruct Evacuation Sequence"
+            >
+              <ShieldAlert size={13} className="animate-pulse" />
+              <span className="hidden sm:inline">EVACUATE</span>
+            </button>
+
             {/* Matrix Rain Toggle Button */}
             <button
               onClick={toggleMatrixRain}
@@ -122,7 +134,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
           <p className="font-mono text-xs sm:text-sm text-slate-300 flex items-center space-x-2 drop-shadow-md">
             <span className="text-[#FF007F] font-bold">CYBERDECK MATRIX OPERATING SYSTEM</span>
             <span>•</span>
-            <span>26 HUD TELEMETRY NODES ACTIVE</span>
+            <span>27 HUD TELEMETRY NODES ACTIVE</span>
           </p>
 
           {/* Off-World Colony Advertising Ticker Banner */}
@@ -134,6 +146,12 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
           </div>
         </div>
       </div>
+
+      {/* Emergency Self-Destruct Modal */}
+      <SelfDestructModal
+        isOpen={isSelfDestructOpen}
+        onClose={() => setIsSelfDestructOpen(false)}
+      />
     </header>
   );
 };

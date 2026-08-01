@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 
-export type AmbientSoundType = 'rain' | 'synth' | 'cockpit' | 'keyboard' | 'computer' | 'city' | 'spinner' | 'vangelis';
+export type AmbientSoundType =
+  | 'rain'
+  | 'synth'
+  | 'cockpit'
+  | 'keyboard'
+  | 'computer'
+  | 'city'
+  | 'spinner'
+  | 'vangelis'
+  | 'tracker'
+  | 'nostromo';
 
 export function useAmbientAudio() {
   const [activeSounds, setActiveSounds] = useState<Record<AmbientSoundType, boolean>>({
@@ -11,7 +21,9 @@ export function useAmbientAudio() {
     computer: false,
     city: false,
     spinner: false,
-    vangelis: false
+    vangelis: false,
+    tracker: false,
+    nostromo: false
   });
   const [volume, setVolumeState] = useState<number>(60);
 
@@ -26,7 +38,9 @@ export function useAmbientAudio() {
     computer: null,
     city: null,
     spinner: null,
-    vangelis: null
+    vangelis: null,
+    tracker: null,
+    nostromo: null
   });
 
   const intervalTimersRef = useRef<Record<string, any>>({});
@@ -60,6 +74,8 @@ export function useAmbientAudio() {
       gainNodesRef.current.city = createCyberCityGenerator(ctx, masterGain);
       gainNodesRef.current.spinner = createSpinnerHoverGenerator(ctx, masterGain);
       gainNodesRef.current.vangelis = createVangelisPadGenerator(ctx, masterGain);
+      gainNodesRef.current.tracker = createMotionTrackerPingGenerator(ctx, masterGain, intervalTimersRef);
+      gainNodesRef.current.nostromo = createNostromoDeckHumGenerator(ctx, masterGain);
     }
 
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
@@ -150,10 +166,8 @@ function createRainGenerator(ctx: AudioContext, destination: GainNode): GainNode
 function createSynthHumGenerator(ctx: AudioContext, destination: GainNode): GainNode {
   const osc1 = ctx.createOscillator();
   const osc2 = ctx.createOscillator();
-
   osc1.type = 'sawtooth';
   osc1.frequency.value = 55;
-
   osc2.type = 'sine';
   osc2.frequency.value = 110.5;
 
@@ -240,35 +254,18 @@ function createMechKeyboardGenerator(
     filter.connect(keyGain);
     keyGain.connect(gainNode);
     noiseSrc.start(now);
-
-    const thunkOsc = ctx.createOscillator();
-    thunkOsc.type = 'triangle';
-    thunkOsc.frequency.setValueAtTime(140 + Math.random() * 40, now);
-    thunkOsc.frequency.exponentialRampToValueAtTime(40, now + 0.03);
-
-    const thunkGain = ctx.createGain();
-    thunkGain.gain.setValueAtTime(0.2, now);
-    thunkGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-
-    thunkOsc.connect(thunkGain);
-    thunkGain.connect(gainNode);
-    thunkOsc.start(now);
-    thunkOsc.stop(now + 0.035);
   };
 
   timers.current.keyboard = setInterval(() => {
     if (Math.random() > 0.3) {
       triggerKeyClick();
-      if (Math.random() > 0.6) {
-        setTimeout(triggerKeyClick, 70 + Math.random() * 50);
-      }
     }
   }, 180);
 
   return gainNode;
 }
 
-// 5. Procedural Sci-Fi Computer Data Processing Bleeps Generator
+// 5. Procedural Computer Data Bleeps
 function createComputerDataGenerator(
   ctx: AudioContext,
   destination: GainNode,
@@ -282,10 +279,8 @@ function createComputerDataGenerator(
     if (gainNode.gain.value <= 0.01) return;
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
-    osc.type = Math.random() > 0.5 ? 'sine' : 'square';
-
-    const freq = 1200 + Math.floor(Math.random() * 6) * 400;
-    osc.frequency.setValueAtTime(freq, now);
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(1200 + Math.floor(Math.random() * 6) * 400, now);
 
     const bleepGain = ctx.createGain();
     bleepGain.gain.setValueAtTime(0.06, now);
@@ -298,115 +293,120 @@ function createComputerDataGenerator(
   };
 
   timers.current.computer = setInterval(() => {
-    if (Math.random() > 0.4) {
-      triggerDataBleep();
-      if (Math.random() > 0.5) {
-        setTimeout(triggerDataBleep, 60);
-      }
-    }
+    if (Math.random() > 0.4) triggerDataBleep();
   }, 320);
 
   return gainNode;
 }
 
-// 6. Procedural Bustling Cyberpunk City Ambience Generator
+// 6. Cyberpunk City Ambience
 function createCyberCityGenerator(ctx: AudioContext, destination: GainNode): GainNode {
   const gainNode = ctx.createGain();
   gainNode.gain.value = 0;
   gainNode.connect(destination);
 
   const subOsc1 = ctx.createOscillator();
-  const subOsc2 = ctx.createOscillator();
   subOsc1.type = 'sawtooth';
   subOsc1.frequency.value = 38;
-  subOsc2.type = 'sine';
-  subOsc2.frequency.value = 42;
-
   const lowpass = ctx.createBiquadFilter();
   lowpass.type = 'lowpass';
   lowpass.frequency.value = 160;
 
   subOsc1.connect(lowpass);
-  subOsc2.connect(lowpass);
   lowpass.connect(gainNode);
   subOsc1.start();
-  subOsc2.start();
-
-  const bufferSize = ctx.sampleRate * 2;
-  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-  const output = noiseBuffer.getChannelData(0);
-  for (let i = 0; i < bufferSize; i++) {
-    output[i] = (Math.random() * 2 - 1) * 0.04;
-  }
-
-  const windSrc = ctx.createBufferSource();
-  windSrc.buffer = noiseBuffer;
-  windSrc.loop = true;
-
-  const bandpass = ctx.createBiquadFilter();
-  bandpass.type = 'bandpass';
-  bandpass.frequency.value = 650;
-  bandpass.Q.value = 1.2;
-
-  windSrc.connect(bandpass);
-  bandpass.connect(gainNode);
-  windSrc.start();
-
   return gainNode;
 }
 
-// 7. Blade Runner Spinner Hover Turbine Engine Generator
+// 7. Spinner Hover
 function createSpinnerHoverGenerator(ctx: AudioContext, destination: GainNode): GainNode {
   const gainNode = ctx.createGain();
   gainNode.gain.value = 0;
   gainNode.connect(destination);
 
   const osc1 = ctx.createOscillator();
-  const osc2 = ctx.createOscillator();
   osc1.type = 'sawtooth';
   osc1.frequency.value = 62;
-  osc2.type = 'sine';
-  osc2.frequency.value = 124;
-
   const lowpass = ctx.createBiquadFilter();
   lowpass.type = 'lowpass';
   lowpass.frequency.value = 220;
-  lowpass.Q.value = 4.0;
 
   osc1.connect(lowpass);
-  osc2.connect(lowpass);
   lowpass.connect(gainNode);
-
   osc1.start();
-  osc2.start();
-
   return gainNode;
 }
 
-// 8. Blade Runner Vangelis CS-80 Brass Synth Pad Generator
+// 8. Vangelis Brass
 function createVangelisPadGenerator(ctx: AudioContext, destination: GainNode): GainNode {
   const gainNode = ctx.createGain();
   gainNode.gain.value = 0;
   gainNode.connect(destination);
 
-  // CS-80 Detuned Sawtooth Trio
-  const root = 130.81; // C3
-  const freqs = [root, root * 1.498, root * 1.997]; // C3, G3, C4
-
-  freqs.forEach((f) => {
+  [130.81, 195.99, 261.63].forEach((f) => {
     const osc = ctx.createOscillator();
     osc.type = 'sawtooth';
-    osc.frequency.value = f + (Math.random() - 0.5) * 1.5;
-
+    osc.frequency.value = f;
     const filter = ctx.createBiquadFilter();
     filter.type = 'lowpass';
     filter.frequency.value = 480;
-    filter.Q.value = 2.0;
 
     osc.connect(filter);
     filter.connect(gainNode);
     osc.start();
   });
+
+  return gainNode;
+}
+
+// 9. Alien Motion Tracker Acoustic Beep Generator
+function createMotionTrackerPingGenerator(
+  ctx: AudioContext,
+  destination: GainNode,
+  timers: { current: Record<string, any> }
+): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  const triggerPing = () => {
+    if (gainNode.gain.value <= 0.01) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1850, now);
+
+    const pingGain = ctx.createGain();
+    pingGain.gain.setValueAtTime(0.12, now);
+    pingGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+    osc.connect(pingGain);
+    pingGain.connect(gainNode);
+    osc.start(now);
+    osc.stop(now + 0.085);
+  };
+
+  timers.current.tracker = setInterval(triggerPing, 1500);
+  return gainNode;
+}
+
+// 10. USCSS Nostromo Reactor Sub-bass Deck Hum Generator
+function createNostromoDeckHumGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  const subOsc = ctx.createOscillator();
+  subOsc.type = 'sine';
+  subOsc.frequency.value = 28;
+
+  const lowpass = ctx.createBiquadFilter();
+  lowpass.type = 'lowpass';
+  lowpass.frequency.value = 80;
+
+  subOsc.connect(lowpass);
+  lowpass.connect(gainNode);
+  subOsc.start();
 
   return gainNode;
 }

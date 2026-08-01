@@ -70,6 +70,13 @@ const THEME_PALETTES: Record<ColorTheme, ThemeContextType['colors']> = {
     accent: '#00E5FF',
     border: '#FF9900',
     glow: 'rgba(255, 153, 0, 0.45)'
+  },
+  'weyland-yutani': {
+    primary: '#FFB700',
+    secondary: '#00FF66',
+    accent: '#FF3300',
+    border: '#FFB700',
+    glow: 'rgba(255, 183, 0, 0.45)'
   }
 };
 
@@ -97,7 +104,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const exportConfig = () => {
     const configData = {
       settings,
-      layout: localStorage.getItem('hud_grid_layout_v3') ? JSON.parse(localStorage.getItem('hud_grid_layout_v3')!) : null,
+      layout: localStorage.getItem('hud_grid_layout_v5') ? JSON.parse(localStorage.getItem('hud_grid_layout_v5')!) : null,
       tasks: localStorage.getItem('hud_directive_tasks') ? JSON.parse(localStorage.getItem('hud_directive_tasks')!) : null,
       habits: localStorage.getItem('hud_habit_streaks') ? JSON.parse(localStorage.getItem('hud_habit_streaks')!) : null,
       quickLinks: localStorage.getItem('hud_web_quick_links') ? JSON.parse(localStorage.getItem('hud_web_quick_links')!) : null,
@@ -120,7 +127,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
       }
       if (data.layout) {
-        localStorage.setItem('hud_grid_layout_v3', JSON.stringify(data.layout));
+        localStorage.setItem('hud_grid_layout_v5', JSON.stringify(data.layout));
       }
       if (data.tasks) {
         localStorage.setItem('hud_directive_tasks', JSON.stringify(data.tasks));

@@ -24,6 +24,7 @@ const ALL_WIDGET_ROSTER: { id: string; name: string }[] = [
   { id: 'airspace_radar', name: 'World Airspace & Flight Radar' },
   { id: 'calendar', name: 'Apple EventKit Calendar Agenda' },
   { id: 'voight_kampff', name: 'Tyrell Corp Voight-Kampff Test' },
+  { id: 'xenomorph_tracker', name: 'USCSS Nostromo Motion Tracker' },
   { id: 'directives', name: 'Current Week Priority Directives' },
   { id: 'weather', name: 'Weather Meteorology Station' },
   { id: 'pomodoro', name: 'Pomodoro Focus Sprint Engine' },
@@ -99,7 +100,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
                 { id: 'matrix', name: 'MATRIX CORE', color: 'border-[#00FF66] text-[#00FF66]' },
                 { id: 'amber', name: 'VT100 PHOSPHOR AMBER', color: 'border-[#FFB000] text-[#FFB000]' },
                 { id: 'chiba', name: 'DEAD CHANNEL TV', color: 'border-[#00F0FF] text-[#38BDF8]' },
-                { id: 'voight-kampff', name: 'VOIGHT-KAMPFF AMBER', color: 'border-[#FF9900] text-[#FF9900]' }
+                { id: 'voight-kampff', name: 'VOIGHT-KAMPFF AMBER', color: 'border-[#FF9900] text-[#FF9900]' },
+                { id: 'weyland-yutani', name: 'WEYLAND-YUTANI CRT', color: 'border-[#FFB700] text-[#FFB700]' }
               ].map((theme) => (
                 <button
                   key={theme.id}

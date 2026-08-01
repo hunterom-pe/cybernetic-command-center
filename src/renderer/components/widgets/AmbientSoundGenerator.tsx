@@ -1,7 +1,7 @@
 import React from 'react';
 import { GlassCard } from '../common/GlassCard';
 import { WidgetHeader } from '../common/WidgetHeader';
-import { Waves, CloudRain, Radio, Keyboard, Cpu, Building2, Disc, Music } from 'lucide-react';
+import { Waves, CloudRain, Radio, Keyboard, Cpu, Building2, Disc, Music, ShieldAlert, Anchor } from 'lucide-react';
 import { useAmbientAudio, AmbientSoundType } from '../../hooks/useAmbientAudio';
 
 export const AmbientSoundGenerator: React.FC = () => {
@@ -15,15 +15,17 @@ export const AmbientSoundGenerator: React.FC = () => {
     { id: 'computer', label: 'CYBER MAINFRAME', icon: Cpu, color: '#38BDF8' },
     { id: 'city', label: 'CYBERPUNK CITY', icon: Building2, color: '#A855F7' },
     { id: 'spinner', label: 'SPINNER HOVER', icon: Disc, color: '#FF9900' },
-    { id: 'vangelis', label: 'VANGELIS BRASS', icon: Music, color: '#FF0055' }
+    { id: 'vangelis', label: 'VANGELIS BRASS', icon: Music, color: '#FF0055' },
+    { id: 'tracker', label: 'TRACKER BEEP', icon: ShieldAlert, color: '#00FF66' },
+    { id: 'nostromo', label: 'NOSTROMO DECK', icon: Anchor, color: '#FFB700' }
   ];
 
   return (
     <GlassCard>
-      <WidgetHeader icon={Waves} prefix="AMBIENT SYNTH" title="PROCEDURAL SOUND GENERATOR" badge="8 SYNTH ENGINE NODES" />
+      <WidgetHeader icon={Waves} prefix="AMBIENT SYNTH" title="PROCEDURAL SOUND GENERATOR" badge="10 SYNTH ENGINE NODES" />
 
       <div className="flex flex-col justify-between h-full space-y-2">
-        <div className="grid grid-cols-4 gap-2 overflow-y-auto max-h-[140px]">
+        <div className="grid grid-cols-5 gap-2 overflow-y-auto max-h-[140px]">
           {sounds.map((s) => {
             const isActive = activeSounds[s.id];
             const Icon = s.icon;
@@ -39,13 +41,13 @@ export const AmbientSoundGenerator: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <Icon size={13} style={{ color: isActive ? s.color : '#8E8EA0' }} />
+                  <Icon size={12} style={{ color: isActive ? s.color : '#8E8EA0' }} />
                   <span className={`font-mono text-[8px] font-bold px-1 py-0.2 rounded border ${isActive ? 'bg-cyan-950 text-[#00F0FF] border-[#00F0FF]/40' : 'text-slate-500 border-[#2A2A36]'}`}>
                     {isActive ? 'ON' : 'OFF'}
                   </span>
                 </div>
 
-                <div className="font-mono text-[9px] font-bold text-slate-200 mt-1 truncate">
+                <div className="font-mono text-[8px] font-bold text-slate-200 mt-1 truncate">
                   {s.label}
                 </div>
               </button>
