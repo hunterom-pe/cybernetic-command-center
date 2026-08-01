@@ -1,7 +1,8 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import util from 'util';
+import { shell } from 'electron';
 
-const execAsync = util.promisify(exec);
+const execFileAsync = util.promisify(execFile);
 
 export interface CalendarEvent {
   id: string;
@@ -17,22 +18,28 @@ export interface CalendarEvent {
 
 export async function openCalendarPrivacySettings(): Promise<boolean> {
   try {
-    await execAsync('open "x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars"');
+    // Try URL scheme via Electron shell
+    await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars');
     return true;
   } catch (err) {
     try {
-      await execAsync('open "x-apple.systempreferences:com.apple.preference.security"');
+      await execFileAsync('open', ['-a', 'System Settings']);
       return true;
     } catch (e) {
-      return false;
+      try {
+        await execFileAsync('open', ['-a', 'System Preferences']);
+        return true;
+      } catch (e2) {
+        return false;
+      }
     }
   }
 }
 
 export async function requestCalendarPermission(): Promise<boolean> {
-  const script = `tell application "Calendar" to activate`;
   try {
-    await execAsync(`osascript -e '${script}'`);
+    // Launching Apple Calendar app triggers native macOS Privacy & Security permission prompt
+    await execFileAsync('open', ['-a', 'Calendar']);
     return true;
   } catch (err) {
     return false;
@@ -41,40 +48,40 @@ export async function requestCalendarPermission(): Promise<boolean> {
 
 export async function fetchAppleCalendarEvents(): Promise<CalendarEvent[]> {
   const script = `
-    tell application "Calendar"
-      set todayStart to (current date)
-      set hours of todayStart to 0
-      set minutes of todayStart to 0
-      set seconds of todayStart to 0
-      
-      set tomorrowEnd to todayStart + (2 * 86400)
-      
-      set eventList to {}
-      repeat with aCal in calendars
-        try
-          set calEvents to (every event of aCal whose start date >= todayStart and start date < tomorrowEnd)
-          repeat with anEvent in calEvents
-            set eventName to summary of anEvent
-            set eventStart to start date of anEvent as string
-            set eventEnd to end date of anEvent as string
-            set calName to name of aCal
-            set end of eventList to (eventName & "|||" & eventStart & "|||" & eventEnd & "|||" & calName)
-          end repeat
-        end try
+tell application "Calendar"
+  set todayStart to (current date)
+  set hours of todayStart to 0
+  set minutes of todayStart to 0
+  set seconds of todayStart to 0
+  
+  set tomorrowEnd to todayStart + (2 * 86400)
+  
+  set eventList to {}
+  repeat with aCal in calendars
+    try
+      set calEvents to (every event of aCal whose start date >= todayStart and start date < tomorrowEnd)
+      repeat with anEvent in calEvents
+        set eventName to summary of anEvent
+        set eventStart to start date of anEvent as string
+        set eventEnd to end date of anEvent as string
+        set calName to name of aCal
+        set end of eventList to (eventName & "|||" & eventStart & "|||" & eventEnd & "|||" & calName)
       end repeat
-      return eventList
-    end tell
+    end try
+  end repeat
+  return eventList
+end tell
   `;
 
   try {
-    const { stdout } = await execAsync(`osascript -e '${script.replace(/\n/g, ' ')}'`);
-    if (!stdout.trim()) {
+    const { stdout } = await execFileAsync('osascript', ['-e', script]);
+    const output = stdout.trim();
+    if (!output) {
       return getFallbackCalendarEvents();
     }
 
-    const lines = stdout.trim().split(', ');
+    const lines = output.split(', ');
     const events: CalendarEvent[] = [];
-
     const now = new Date();
     const todayStr = now.toDateString();
 
@@ -101,82 +108,54 @@ export async function fetchAppleCalendarEvents(): Promise<CalendarEvent[]> {
           endDate: isNaN(parsedEnd.getTime()) ? new Date().toISOString() : parsedEnd.toISOString(),
           timeString,
           isToday,
-          calendarName: calendarName || 'Work',
-          color: isToday ? '#00F0FF' : '#FF007F'
+          calendarName: calendarName || 'Personal',
+          color: calendarName.toLowerCase().includes('work') ? '#FF007F' : '#00F0FF'
         });
       }
     });
 
-    if (events.length === 0) {
-      return getFallbackCalendarEvents();
-    }
-
-    return events;
+    return events.length > 0 ? events : getFallbackCalendarEvents();
   } catch (err) {
     return getFallbackCalendarEvents();
   }
 }
 
 function getFallbackCalendarEvents(): CalendarEvent[] {
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const now = new Date();
+  const today10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0);
+  const today14 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 30, 0);
+  const tomorrow11 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 11, 0, 0);
 
   return [
     {
-      id: 'evt-1',
-      title: 'SYS_ARCH // Core Telemetry Briefing',
-      startDate: new Date(today.setHours(9, 30)).toISOString(),
-      endDate: new Date(today.setHours(10, 15)).toISOString(),
-      timeString: '09:30 AM',
+      id: 'cal-fb-1',
+      title: 'NEXUS OS Architecture & Security Review',
+      startDate: today10.toISOString(),
+      endDate: new Date(today10.getTime() + 3600000).toISOString(),
+      timeString: '10:00 AM',
       isToday: true,
-      calendarName: 'Work',
-      location: 'Command Deck 01',
+      calendarName: 'Engineering',
       color: '#00F0FF'
     },
     {
-      id: 'evt-2',
-      title: 'QUANTUM_DEV // Sprint Code Review',
-      startDate: new Date(today.setHours(14, 0)).toISOString(),
-      endDate: new Date(today.setHours(15, 0)).toISOString(),
-      timeString: '02:00 PM',
+      id: 'cal-fb-2',
+      title: 'Matrix Neural AI Pipeline Sync',
+      startDate: today14.toISOString(),
+      endDate: new Date(today14.getTime() + 2700000).toISOString(),
+      timeString: '02:30 PM',
       isToday: true,
-      calendarName: 'Engineering',
-      location: 'Virtual Matrix Sync',
+      calendarName: 'AI Directives',
       color: '#FF007F'
     },
     {
-      id: 'evt-3',
-      title: 'CYBER_SECURITY // Infrastructure Audit',
-      startDate: new Date(today.setHours(16, 30)).toISOString(),
-      endDate: new Date(today.setHours(17, 30)).toISOString(),
-      timeString: '04:30 PM',
-      isToday: true,
-      calendarName: 'Ops',
-      location: 'Secure Terminal',
-      color: '#FF6B00'
-    },
-    {
-      id: 'evt-4',
-      title: 'MARKET_STAGING // Q3 Portfolio Rebalance',
-      startDate: new Date(tomorrow.setHours(11, 0)).toISOString(),
-      endDate: new Date(tomorrow.setHours(12, 0)).toISOString(),
+      id: 'cal-fb-3',
+      title: 'Cyberspace Telemetry Audit',
+      startDate: tomorrow11.toISOString(),
+      endDate: new Date(tomorrow11.getTime() + 3600000).toISOString(),
       timeString: '11:00 AM',
       isToday: false,
-      calendarName: 'Finance',
-      location: 'WallSt Terminal',
-      color: '#00FF66'
-    },
-    {
-      id: 'evt-5',
-      title: 'DEEP_LEARNING // Neural Model Training',
-      startDate: new Date(tomorrow.setHours(15, 30)).toISOString(),
-      endDate: new Date(tomorrow.setHours(16, 30)).toISOString(),
-      timeString: '03:30 PM',
-      isToday: false,
-      calendarName: 'AI Research',
-      location: 'Cluster 04',
-      color: '#00F0FF'
+      calendarName: 'Operations',
+      color: '#FF6B00'
     }
   ];
 }
