@@ -6,7 +6,20 @@ export const FixedCyberBackground: React.FC = () => {
       {/* Base Deep Obsidian Background */}
       <div className="absolute inset-0 bg-[#08080C]" />
 
-      {/* Static Cyberpunk 24px Grid Overlay */}
+      {/* Locked Fixed Cityscape Banner Image (Height 480px - 50% Taller) */}
+      <div className="absolute top-0 left-0 right-0 h-[480px] overflow-hidden">
+        <img
+          src="./assets/city_banner.jpg"
+          alt="Cyberpunk City Skyline"
+          className="w-full h-full object-cover object-center filter brightness-85 contrast-110 opacity-75"
+        />
+
+        {/* Vertical Fade Mask: City image fades seamlessly into deep black obsidian as you scroll down */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#08080C]/40 to-[#08080C]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#08080C]/70 via-transparent to-[#08080C]/70" />
+      </div>
+
+      {/* Static Cyberpunk Grid Overlay */}
       <div
         className="absolute inset-0 opacity-20"
         style={{
@@ -19,7 +32,7 @@ export const FixedCyberBackground: React.FC = () => {
       />
 
       {/* Perspective 3D Neon Horizon Glow */}
-      <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-[#00F0FF]/10 via-[#FF007F]/5 to-transparent filter blur-3xl opacity-60" />
+      <div className="absolute inset-x-0 top-0 h-96 bg-gradient-to-b from-[#00F0FF]/15 via-[#FF007F]/5 to-transparent filter blur-3xl opacity-60" />
 
       {/* CRT Scanline Texture Overlay */}
       <div

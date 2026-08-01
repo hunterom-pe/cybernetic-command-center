@@ -27,23 +27,9 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
   };
 
   return (
-    <header className="relative w-full h-64 sm:h-80 overflow-hidden border-b border-[#00F0FF]/30 select-none shadow-[0_10px_30px_rgba(0,0,0,0.8)]">
-      {/* Background Panoramic City Image */}
-      <img
-        src="./assets/city_banner.jpg"
-        alt="Cyberpunk City Skyline"
-        className="absolute inset-0 w-full h-full object-cover object-center filter brightness-90 contrast-110"
-      />
-
-      {/* Cyberpunk Dark Gradients */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#08080C] via-[#08080C]/50 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#08080C]/80 via-transparent to-[#08080C]/80" />
-
-      {/* Grid Scanline Overlay */}
-      <div className="absolute inset-0 bg-[radial-gradient(#00F0FF_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
-
+    <header className="relative w-full h-[480px] select-none">
       {/* Header Content */}
-      <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 max-w-[1920px] mx-auto">
+      <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 max-w-[1920px] mx-auto pb-12">
         {/* Top Control Bar */}
         <div className="flex items-center justify-between">
           {/* App Badge, Date & Status */}
@@ -126,9 +112,9 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
           </div>
         </div>
 
-        {/* Bottom Banner Title & Subtitle with RGB Chromatic Glitch */}
-        <div className="space-y-1">
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-sans text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] glitch-hover cursor-pointer">
+        {/* Bottom Banner Title & Subtitle */}
+        <div className="space-y-1 mt-auto">
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight font-sans text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] glitch-hover cursor-pointer">
             NEXUS <span style={{ color: colors.primary }}>OS</span>
           </h1>
           <p className="font-mono text-xs sm:text-sm text-slate-300 flex items-center space-x-2 drop-shadow-md">
