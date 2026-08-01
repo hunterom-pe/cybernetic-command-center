@@ -9,6 +9,7 @@ import { SettingsModal } from './components/common/SettingsModal';
 import { CommandBar } from './components/common/CommandBar';
 import { FixedCyberBackground } from './components/common/FixedCyberBackground';
 import { MatrixDigitalRain } from './components/common/MatrixDigitalRain';
+import { CyberScreensaver } from './components/common/CyberScreensaver';
 import { QuickLink, DirectiveItem } from './types/hud';
 
 // All 27 Functional Widgets
@@ -96,6 +97,41 @@ const MainContent: React.FC = () => {
   const { settings } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
+  const [isScreensaverActive, setIsScreensaverActive] = useState(false);
+
+  // Auto-Idle Detection (3 Minutes Inactivity)
+  useEffect(() => {
+    let idleTimer: any;
+
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        setIsScreensaverActive(true);
+      }, 180000); // 3 minutes
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      resetIdleTimer();
+      // Hotkey: Cmd + Shift + S or Ctrl + Shift + S
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        setIsScreensaverActive((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('mousemove', resetIdleTimer);
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('click', resetIdleTimer);
+
+    resetIdleTimer();
+
+    return () => {
+      clearTimeout(idleTimer);
+      window.removeEventListener('mousemove', resetIdleTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('click', resetIdleTimer);
+    };
+  }, []);
 
   const [layout, setLayout] = useState<Layout[]>(() => {
     const saved = localStorage.getItem('hud_grid_layout_v6');
@@ -164,6 +200,13 @@ const MainContent: React.FC = () => {
         <HeaderBanner
           onOpenSettings={() => setIsSettingsOpen(true)}
           onOpenCommandBar={() => setIsCommandBarOpen(true)}
+          onTriggerScreensaver={() => setIsScreensaverActive(true)}
+        />
+
+        {/* Fullscreen Ambient Cyberdeck Screensaver Overlay */}
+        <CyberScreensaver
+          isActive={isScreensaverActive}
+          onWake={() => setIsScreensaverActive(false)}
         />
 
         {/* Main Draggable Widget Grid */}

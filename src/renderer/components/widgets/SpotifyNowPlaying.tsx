@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../common/GlassCard';
 import { WidgetHeader } from '../common/WidgetHeader';
-import { Music, Play, Pause, SkipBack, SkipForward, Volume2, Activity, Disc, Zap } from 'lucide-react';
+import { Music, Play, Pause, SkipBack, SkipForward, Volume2, Mic, MicOff, Disc } from 'lucide-react';
 import { useSpotifyPlayback } from '../../hooks/useSpotifyPlayback';
 import { useTheme } from '../../context/ThemeContext';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
@@ -13,10 +13,59 @@ export const SpotifyNowPlaying: React.FC = () => {
   const { colors } = useTheme();
   const { playClickSFX, playToggleSFX } = useCyberSFX();
   const [visMode, setVisMode] = useState<VisualizerMode>('bars');
+  const [isLiveMicSync, setIsLiveMicSync] = useState(false);
+  const [leftVu, setLeftVu] = useState(10);
+  const [rightVu, setRightVu] = useState(10);
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  // Animated Visualizer Canvas Engine
+  // Toggle Live System / Microphone Audio Sync
+  const toggleLiveAudioSync = async () => {
+    playToggleSFX();
+    if (isLiveMicSync) {
+      // Turn off mic stream
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+        mediaStreamRef.current = null;
+      }
+      setIsLiveMicSync(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioCtx();
+        const source = ctx.createMediaStreamSource(stream);
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 64;
+
+        source.connect(analyser);
+
+        audioCtxRef.current = ctx;
+        analyserRef.current = analyser;
+        mediaStreamRef.current = stream;
+        setIsLiveMicSync(true);
+      } catch (err) {
+        console.error('System Audio Capture permission denied:', err);
+      }
+    }
+  };
+
+  // Cleanup audio stream on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+      }
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, []);
+
+  // Animated Visualizer Canvas Engine (Real FFT vs Synthesized Beat)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -25,6 +74,7 @@ export const SpotifyNowPlaying: React.FC = () => {
 
     let animId: number;
     let phase = 0;
+    const dataArray = new Uint8Array(32);
 
     const drawVisualizer = () => {
       const w = canvas.width;
@@ -32,22 +82,42 @@ export const SpotifyNowPlaying: React.FC = () => {
 
       ctx.clearRect(0, 0, w, h);
 
+      // Fetch Real Web Audio Analyser Frequency Data if active
+      if (isLiveMicSync && analyserRef.current) {
+        analyserRef.current.getByteFrequencyData(dataArray);
+
+        // Calculate Left/Right VU Level Average
+        let sumL = 0;
+        let sumR = 0;
+        for (let i = 0; i < 16; i++) sumL += dataArray[i];
+        for (let i = 16; i < 32; i++) sumR += dataArray[i];
+
+        setLeftVu(Math.min(100, Math.max(10, Math.floor((sumL / (16 * 255)) * 100))));
+        setRightVu(Math.min(100, Math.max(10, Math.floor((sumR / (16 * 255)) * 100))));
+      } else {
+        setLeftVu(playback.isPlaying ? Math.floor(50 + Math.random() * 45) : 10);
+        setRightVu(playback.isPlaying ? Math.floor(50 + Math.random() * 45) : 10);
+      }
+
       if (visMode === 'bars') {
-        // Mode 1: 32-Band Cyber Spectrum Analyzer
         const numBars = 32;
         const barWidth = (w - (numBars - 1) * 3) / numBars;
 
         for (let i = 0; i < numBars; i++) {
-          // Dynamic frequency height simulation based on playback position & index
-          const base = Math.sin(phase + i * 0.25) * 0.4 + 0.5;
-          const noise = Math.random() * 0.25;
-          const value = playback.isPlaying ? Math.min(1, Math.max(0.1, base + noise)) : 0.08;
+          let value = 0.08;
+
+          if (isLiveMicSync && analyserRef.current) {
+            value = Math.min(1, Math.max(0.08, dataArray[i] / 255));
+          } else if (playback.isPlaying) {
+            const base = Math.sin(phase + i * 0.25) * 0.4 + 0.5;
+            const noise = Math.random() * 0.25;
+            value = Math.min(1, Math.max(0.1, base + noise));
+          }
 
           const barHeight = value * (h - 10);
           const x = i * (barWidth + 3);
           const y = h - barHeight;
 
-          // Gradient: Primary Color -> Secondary Color
           const grad = ctx.createLinearGradient(0, h, 0, 0);
           grad.addColorStop(0, colors.primary);
           grad.addColorStop(0.6, '#FF007F');
@@ -56,12 +126,10 @@ export const SpotifyNowPlaying: React.FC = () => {
           ctx.fillStyle = grad;
           ctx.fillRect(x, y, barWidth, barHeight);
 
-          // Top Peak Cap Dot
           ctx.fillStyle = '#FFFFFF';
           ctx.fillRect(x, Math.max(0, y - 3), barWidth, 2);
         }
       } else if (visMode === 'circular') {
-        // Mode 2: Circular Oscilloscope / Vector Scope
         const cx = w / 2;
         const cy = h / 2;
         const radius = Math.min(w, h) / 2 - 12;
@@ -70,10 +138,17 @@ export const SpotifyNowPlaying: React.FC = () => {
         ctx.lineWidth = 2;
         ctx.beginPath();
 
-        const points = 48;
+        const points = 32;
         for (let i = 0; i <= points; i++) {
           const angle = (i / points) * Math.PI * 2;
-          const wave = playback.isPlaying ? Math.sin(phase * 2 + i * 0.5) * 12 : 2;
+          let wave = 2;
+
+          if (isLiveMicSync && analyserRef.current) {
+            wave = (dataArray[i % 32] / 255) * 20;
+          } else if (playback.isPlaying) {
+            wave = Math.sin(phase * 2 + i * 0.5) * 12;
+          }
+
           const r = radius + wave;
           const px = cx + Math.cos(angle) * r;
           const py = cy + Math.sin(angle) * r;
@@ -84,13 +159,11 @@ export const SpotifyNowPlaying: React.FC = () => {
         ctx.closePath();
         ctx.stroke();
 
-        // Inner Pulsing Core
-        ctx.fillStyle = playback.isPlaying ? '#FF007F' : '#2A2A36';
+        ctx.fillStyle = playback.isPlaying || isLiveMicSync ? '#FF007F' : '#2A2A36';
         ctx.beginPath();
         ctx.arc(cx, cy, Math.abs(Math.sin(phase) * 10) + 8, 0, Math.PI * 2);
         ctx.fill();
       } else {
-        // Mode 3: 3D Peak Wave Matrix
         const cols = 20;
         const rows = 10;
         const cellW = w / cols;
@@ -98,8 +171,14 @@ export const SpotifyNowPlaying: React.FC = () => {
 
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) {
-            const val = Math.sin(phase + c * 0.3 + r * 0.4);
-            const intensity = playback.isPlaying ? (val + 1) / 2 : 0.1;
+            let intensity = 0.1;
+            if (isLiveMicSync && analyserRef.current) {
+              const val = dataArray[(c + r) % 32] / 255;
+              intensity = val;
+            } else if (playback.isPlaying) {
+              const val = Math.sin(phase + c * 0.3 + r * 0.4);
+              intensity = (val + 1) / 2;
+            }
 
             ctx.fillStyle = intensity > 0.65 ? colors.primary : intensity > 0.35 ? '#FF007F' : 'rgba(26, 26, 36, 0.6)';
             ctx.fillRect(c * cellW + 1, r * cellH + 1, cellW - 2, cellH - 2);
@@ -107,13 +186,13 @@ export const SpotifyNowPlaying: React.FC = () => {
         }
       }
 
-      phase += playback.isPlaying ? 0.08 : 0.02;
+      phase += playback.isPlaying || isLiveMicSync ? 0.08 : 0.02;
       animId = requestAnimationFrame(drawVisualizer);
     };
 
     drawVisualizer();
     return () => cancelAnimationFrame(animId);
-  }, [visMode, playback.isPlaying, colors.primary]);
+  }, [visMode, playback.isPlaying, isLiveMicSync, colors.primary]);
 
   return (
     <GlassCard>
@@ -121,10 +200,25 @@ export const SpotifyNowPlaying: React.FC = () => {
         icon={Music}
         prefix="AUDIO SPECTRUM"
         title="CYBERPUNK AUDIO VISUALIZER // LOGIC"
-        badge={playback.isPlaying ? 'LIVE AUDIO' : 'PAUSED'}
-        badgeColor={playback.isPlaying ? 'cyan' : 'magenta'}
+        badge={isLiveMicSync ? 'LIVE AUDIO SYNC ON' : playback.isPlaying ? 'PLAYING' : 'PAUSED'}
+        badgeColor={isLiveMicSync ? 'green' : playback.isPlaying ? 'cyan' : 'magenta'}
         actions={
           <div className="flex items-center space-x-1">
+            {/* Live Audio Sync Button */}
+            <button
+              onClick={toggleLiveAudioSync}
+              className={`px-2 py-0.5 rounded border font-mono text-[9px] font-bold uppercase transition-all flex items-center space-x-1 ${
+                isLiveMicSync
+                  ? 'bg-emerald-950 border-[#00FF66] text-[#00FF66]'
+                  : 'bg-[#1A1A24] border-[#2A2A36] text-slate-400 hover:text-white'
+              }`}
+              title={isLiveMicSync ? 'Disable Live System Audio Sync' : 'Sync Visualizer Live to Microphone / Speaker Audio'}
+            >
+              {isLiveMicSync ? <Mic size={10} /> : <MicOff size={10} />}
+              <span>{isLiveMicSync ? 'LIVE SYNC' : 'SYNC MIC'}</span>
+            </button>
+
+            {/* Mode Switcher */}
             <button
               onClick={() => {
                 playToggleSFX();
@@ -147,8 +241,8 @@ export const SpotifyNowPlaying: React.FC = () => {
             <span className="font-mono text-[8px] text-slate-400">L</span>
             <div className="w-2 flex-1 bg-[#1A1A24] rounded-full overflow-hidden flex flex-col-reverse p-0.5">
               <div
-                className="w-full bg-gradient-to-t from-[#00F0FF] via-[#FF007F] to-[#FF6B00] rounded-full transition-all duration-150"
-                style={{ height: playback.isPlaying ? `${Math.floor(60 + Math.random() * 35)}%` : '10%' }}
+                className="w-full bg-gradient-to-t from-[#00F0FF] via-[#FF007F] to-[#FF6B00] rounded-full transition-all duration-75"
+                style={{ height: `${leftVu}%` }}
               />
             </div>
             <span className="font-mono text-[7px] text-emerald-400 font-bold">dB</span>
@@ -164,8 +258,8 @@ export const SpotifyNowPlaying: React.FC = () => {
             <span className="font-mono text-[8px] text-slate-400">R</span>
             <div className="w-2 flex-1 bg-[#1A1A24] rounded-full overflow-hidden flex flex-col-reverse p-0.5">
               <div
-                className="w-full bg-gradient-to-t from-[#00F0FF] via-[#FF007F] to-[#FF6B00] rounded-full transition-all duration-150"
-                style={{ height: playback.isPlaying ? `${Math.floor(60 + Math.random() * 35)}%` : '10%' }}
+                className="w-full bg-gradient-to-t from-[#00F0FF] via-[#FF007F] to-[#FF6B00] rounded-full transition-all duration-75"
+                style={{ height: `${rightVu}%` }}
               />
             </div>
             <span className="font-mono text-[7px] text-emerald-400 font-bold">dB</span>
@@ -211,7 +305,7 @@ export const SpotifyNowPlaying: React.FC = () => {
 
             <button
               onClick={() => { playClickSFX(); nextTrack(); }}
-              className="p-1 rounded text-slate-400 hover:text-white hover:bg-[#2A2A36]"
+              className="p-1 rounded text-[#00F0FF] hover:text-white hover:bg-[#2A2A36]"
               title="Next Track"
             >
               <SkipForward size={13} />

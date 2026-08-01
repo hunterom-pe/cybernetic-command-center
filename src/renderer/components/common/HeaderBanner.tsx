@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary, Eye, ShieldAlert } from 'lucide-react';
+import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary, Eye, ShieldAlert, Monitor } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
 import { SelfDestructModal } from './SelfDestructModal';
@@ -7,9 +7,10 @@ import { SelfDestructModal } from './SelfDestructModal';
 interface HeaderBannerProps {
   onOpenSettings: () => void;
   onOpenCommandBar: () => void;
+  onTriggerScreensaver: () => void;
 }
 
-export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOpenCommandBar }) => {
+export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOpenCommandBar, onTriggerScreensaver }) => {
   const { settings, updateSettings, colors } = useTheme();
   const { playToggleSFX, playClickSFX } = useCyberSFX();
   const [isSelfDestructOpen, setIsSelfDestructOpen] = useState(false);
@@ -56,6 +57,16 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
+            {/* Screensaver Manual Trigger Button */}
+            <button
+              onClick={() => { playClickSFX(); onTriggerScreensaver(); }}
+              className="px-2.5 py-1.5 rounded-lg bg-cyan-950/90 border border-[#00F0FF]/50 text-[#00F0FF] hover:bg-cyan-900/90 font-mono text-xs font-bold transition-all shadow-md backdrop-blur-md flex items-center space-x-1.5"
+              title="Activate Cyberdeck Matrix Ambient Screensaver Mode"
+            >
+              <Monitor size={13} />
+              <span className="hidden sm:inline">STANDBY</span>
+            </button>
+
             {/* Emergency Nostromo Self-Destruct Trigger Button */}
             <button
               onClick={() => { playClickSFX(); setIsSelfDestructOpen(true); }}
