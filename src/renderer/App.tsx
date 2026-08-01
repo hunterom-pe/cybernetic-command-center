@@ -38,42 +38,49 @@ import { TechNewsRSSWidget } from './components/widgets/TechNewsRSSWidget';
 import { AirspaceRadarWidget } from './components/widgets/AirspaceRadarWidget';
 import { TerminalCLIWidget } from './components/widgets/TerminalCLIWidget';
 import { NeuralAIWidget } from './components/widgets/NeuralAIWidget';
-
-// Blade Runner Voight-Kampff Test Widget
 import { VoightKampffWidget } from './components/widgets/VoightKampffWidget';
 
 const ReactGridLayout = WidthProvider(RGL);
 
-// Organized into 5 Tactical Zones with Varied Sizes
+// Custom Requested Layout:
+// Row 0: All System Processes & Telemetry (sys_perf, sys_processes, clocks)
+// Row 2: Weather, Spotify, Calendar
+// Rows 4+: Organized Tactical Groups
 const DEFAULT_LAYOUT: Layout[] = [
-  // ZONE 1: SYSTEM & NETWORK TELEMETRY (Row 0)
-  { i: 'clocks', x: 0, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'sys_perf', x: 4, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'sys_processes', x: 8, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
+  // ROW 0: ALL SYSTEM PROCESSES & TELEMETRY AT TOP
+  { i: 'sys_perf', x: 0, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'sys_processes', x: 4, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'clocks', x: 8, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ZONE 2: MARKETS, TECH & NETWORK SPEED (Rows 2 & 4)
-  { i: 'markets', x: 0, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'crypto', x: 4, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'network_speed', x: 8, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'github', x: 0, y: 4, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'tech_news', x: 6, y: 4, w: 6, h: 2, minW: 4, minH: 2 },
+  // ROW 2: WEATHER, SPOTIFY & CALENDAR
+  { i: 'weather', x: 0, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'spotify', x: 4, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'calendar', x: 8, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ZONE 3: DEVELOPER & NEURAL AI ENGINE (Rows 6 & 8)
-  { i: 'terminal', x: 0, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'neural_ai', x: 6, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'airspace_radar', x: 0, y: 8, w: 12, h: 2, minW: 6, minH: 2 },
+  // ROW 4: MARKETS, CRYPTO & NETWORK TELEMETRY
+  { i: 'markets', x: 0, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'crypto', x: 4, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'network_speed', x: 8, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ZONE 4: BLADE RUNNER, FOCUS SPRINTS & DIRECTIVES (Rows 10 & 12)
-  { i: 'voight_kampff', x: 0, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'calendar', x: 4, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'directives', x: 8, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'weather', x: 0, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  // ROW 6: GITHUB & CYBER NEWS RSS FEED
+  { i: 'github', x: 0, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: 'tech_news', x: 6, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
+
+  // ROW 8: TERMINAL CLI, NEURAL AI & AIRSPACE RADAR
+  { i: 'terminal', x: 0, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: 'neural_ai', x: 6, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: 'airspace_radar', x: 0, y: 10, w: 12, h: 2, minW: 6, minH: 2 },
+
+  // ROW 12: VOIGHT-KAMPFF, POMODORO & DIRECTIVES
+  { i: 'voight_kampff', x: 0, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
   { i: 'pomodoro', x: 4, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'staging', x: 8, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'directives', x: 8, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ZONE 5: AUDIO, PRODUCTIVITY & MINDSET (Rows 14, 16 & 18)
-  { i: 'spotify', x: 0, y: 14, w: 6, h: 2, minW: 4, minH: 2 },
+  // ROW 14: STAGING & AMBIENT AUDIO
+  { i: 'staging', x: 0, y: 14, w: 6, h: 2, minW: 4, minH: 2 },
   { i: 'ambient', x: 6, y: 14, w: 6, h: 2, minW: 4, minH: 2 },
+
+  // ROWS 16+: PRODUCTIVITY, MINDSET & GRATITUDE
   { i: 'milestone', x: 0, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
   { i: 'launcher', x: 4, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
   { i: 'clipboard', x: 8, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
@@ -89,7 +96,7 @@ const MainContent: React.FC = () => {
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
 
   const [layout, setLayout] = useState<Layout[]>(() => {
-    const saved = localStorage.getItem('hud_grid_layout_v4');
+    const saved = localStorage.getItem('hud_grid_layout_v5');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -100,20 +107,23 @@ const MainContent: React.FC = () => {
   const [tasks, setTasks] = useState<DirectiveItem[]>([]);
 
   useEffect(() => {
-    localStorage.setItem('hud_grid_layout_v4', JSON.stringify(layout));
+    localStorage.setItem('hud_grid_layout_v5', JSON.stringify(layout));
   }, [layout]);
 
   const handleResetLayout = () => {
     setLayout(DEFAULT_LAYOUT);
-    localStorage.removeItem('hud_grid_layout_v4');
+    localStorage.removeItem('hud_grid_layout_v5');
   };
 
   const hiddenSet = new Set(settings.hiddenWidgets || []);
 
   const widgetMap: Record<string, React.ReactNode> = {
-    clocks: <DualMissionClocks />,
     sys_perf: <SystemPerformanceHUD />,
     sys_processes: <SysProcessesWidget />,
+    clocks: <DualMissionClocks />,
+    weather: <PhoenixWeatherStation />,
+    spotify: <SpotifyNowPlaying />,
+    calendar: <AppleCalendarFeed />,
     markets: <MarketWatchHUD />,
     crypto: <CryptoTelemetryWatch />,
     network_speed: <NetworkSpeedWidget />,
@@ -123,12 +133,9 @@ const MainContent: React.FC = () => {
     neural_ai: <NeuralAIWidget />,
     airspace_radar: <AirspaceRadarWidget />,
     voight_kampff: <VoightKampffWidget />,
-    calendar: <AppleCalendarFeed />,
-    directives: <CurrentWeekDirectives onTasksChange={(t) => setTasks(t)} />,
-    weather: <PhoenixWeatherStation />,
     pomodoro: <PomodoroSprintHUD />,
+    directives: <CurrentWeekDirectives onTasksChange={(t) => setTasks(t)} />,
     staging: <NextWeekStaging />,
-    spotify: <SpotifyNowPlaying />,
     ambient: <AmbientSoundGenerator />,
     milestone: <MilestoneCountdown />,
     launcher: <WebQuickLauncher />,
