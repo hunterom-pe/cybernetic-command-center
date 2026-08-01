@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar } from 'lucide-react';
+import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
 
@@ -9,7 +9,7 @@ interface HeaderBannerProps {
 }
 
 export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOpenCommandBar }) => {
-  const { settings, updateSettings } = useTheme();
+  const { settings, updateSettings, colors } = useTheme();
   const { playToggleSFX } = useCyberSFX();
 
   const toggleGridLock = () => {
@@ -19,6 +19,11 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
 
   const toggleSFX = () => {
     updateSettings({ sfxEnabled: !settings.sfxEnabled });
+  };
+
+  const toggleMatrixRain = () => {
+    playToggleSFX();
+    updateSettings({ matrixRainEnabled: !settings.matrixRainEnabled });
   };
 
   return (
@@ -43,7 +48,7 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
         <div className="flex items-center justify-between">
           {/* App Badge, Date & Status */}
           <div className="flex items-center space-x-3">
-            <div className="font-mono text-xs font-bold text-[#00F0FF] bg-[#121218]/90 border border-[#00F0FF]/40 px-3 py-1 rounded shadow-lg flex items-center space-x-2 backdrop-blur-md">
+            <div className="font-mono text-xs font-bold bg-[#121218]/90 border px-3 py-1 rounded shadow-lg flex items-center space-x-2 backdrop-blur-md" style={{ color: colors.primary, borderColor: `${colors.primary}60` }}>
               <span className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse" />
               <span>NEXUS OS v1.0</span>
             </div>
@@ -55,12 +60,25 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
             </div>
 
             <div className="hidden md:flex font-mono text-[10px] text-slate-400 space-x-2 bg-[#121218]/80 px-2.5 py-1 rounded border border-[#2A2A36]">
-              <span>STATUS: <strong className="text-[#00FF66]">ALL SYSTEMS NOMINAL</strong></span>
+              <span>STATUS: <strong className="text-[#00FF66]">ONO-SENDAI CYBERDECK ONLINE</strong></span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
+            {/* Matrix Rain Toggle Button */}
+            <button
+              onClick={toggleMatrixRain}
+              className={`p-2 rounded-lg border transition-all backdrop-blur-md ${
+                settings.matrixRainEnabled
+                  ? 'bg-emerald-950/80 border-emerald-500/50 text-[#00FF66]'
+                  : 'bg-[#1A1A24]/80 border-[#2A2A36] text-slate-500'
+              }`}
+              title={settings.matrixRainEnabled ? 'Disable Matrix Rain Effect' : 'Enable Matrix Digital Rain Effect'}
+            >
+              <Binary size={15} />
+            </button>
+
             {/* Grid Lock Toggle Button */}
             <button
               onClick={toggleGridLock}
@@ -108,15 +126,15 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
           </div>
         </div>
 
-        {/* Bottom Banner Title & Subtitle */}
+        {/* Bottom Banner Title & Subtitle with RGB Chromatic Glitch */}
         <div className="space-y-1">
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-sans text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)]">
-            NEXUS <span className="text-[#00F0FF] glow-cyan">OS</span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-sans text-white drop-shadow-[0_4px_12px_rgba(0,0,0,0.9)] glitch-hover cursor-pointer">
+            NEXUS <span style={{ color: colors.primary }}>OS</span>
           </h1>
           <p className="font-mono text-xs sm:text-sm text-slate-300 flex items-center space-x-2 drop-shadow-md">
-            <span className="text-[#FF007F] font-bold">TACTICAL DASHBOARD</span>
+            <span className="text-[#FF007F] font-bold">CYBERDECK MATRIX OPERATING SYSTEM</span>
             <span>•</span>
-            <span>25 CYBERPUNK HUD TELEMETRY NODES ACTIVE</span>
+            <span>25 HUD TELEMETRY NODES ACTIVE</span>
           </p>
         </div>
       </div>

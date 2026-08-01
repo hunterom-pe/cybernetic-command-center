@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { X, RotateCcw, Download, Upload, Eye, EyeOff, Volume2, Sun, Shield } from 'lucide-react';
+import { X, RotateCcw, Download, Upload, Eye, EyeOff, Volume2, Sun, Shield, Binary } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { ColorTheme, WeatherCity } from '../../types/hud';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
@@ -13,28 +13,28 @@ interface SettingsModalProps {
 const ALL_WIDGET_ROSTER: { id: string; name: string }[] = [
   { id: 'clocks', name: 'Dual Mission Clocks' },
   { id: 'sys_perf', name: 'System Performance HUD' },
+  { id: 'sys_processes', name: 'Top macOS System Processes' },
   { id: 'markets', name: 'Market Watch HUD' },
   { id: 'crypto', name: 'Crypto Telemetry Watch' },
-  { id: 'weather', name: 'Weather Meteorology Station' },
-  { id: 'spotify', name: 'Spotify Now Playing' },
-  { id: 'sys_processes', name: 'Top macOS System Processes' },
   { id: 'network_speed', name: 'Network Speed & Latency HUD' },
+  { id: 'github', name: 'GitHub Repos Telemetry' },
   { id: 'tech_news', name: 'Cyber & Tech News RSS Feed' },
-  { id: 'airspace_radar', name: 'World Airspace & Flight Radar' },
-  { id: 'ambient', name: 'Procedural Ambient Sound Generator' },
-  { id: 'calendar', name: 'Apple EventKit Calendar Agenda' },
-  { id: 'directives', name: 'Current Week Priority Directives' },
   { id: 'terminal', name: 'macOS Shell CLI Terminal Executor' },
   { id: 'neural_ai', name: 'Matrix Neural AI Assistant' },
-  { id: 'staging', name: 'Next Week Staging & Scratchpad' },
+  { id: 'airspace_radar', name: 'World Airspace & Flight Radar' },
+  { id: 'calendar', name: 'Apple EventKit Calendar Agenda' },
+  { id: 'directives', name: 'Current Week Priority Directives' },
+  { id: 'weather', name: 'Weather Meteorology Station' },
   { id: 'pomodoro', name: 'Pomodoro Focus Sprint Engine' },
+  { id: 'staging', name: 'Next Week Staging & Scratchpad' },
+  { id: 'spotify', name: 'Spotify Now Playing' },
+  { id: 'ambient', name: 'Procedural Ambient Sound Generator' },
   { id: 'milestone', name: 'Milestone Target Countdown' },
   { id: 'launcher', name: 'Tactical Web Quick Launcher' },
   { id: 'clipboard', name: 'Quick Clipboard Stash' },
   { id: 'habits', name: '7-Day Habit Streak Tracker' },
   { id: 'stoic', name: 'Daily Stoic Briefing' },
   { id: 'horoscope', name: 'Personalized Natal Horoscope' },
-  { id: 'github', name: 'GitHub Repos Telemetry' },
   { id: 'gratitude', name: 'Daily Gratitude Journal' }
 ];
 
@@ -86,21 +86,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
 
         {/* Modal Body */}
         <div className="p-5 overflow-y-auto space-y-6 flex-1 font-mono text-xs">
-          {/* Section 1: Color Themes */}
+          {/* Section 1: Color Themes (5 Palettes) */}
           <div>
             <div className="text-slate-300 font-bold mb-2 uppercase text-[10px] tracking-wider text-[#00F0FF]">
-              VISUAL COLOR THEMES
+              VISUAL COLOR THEMES & PALETTES
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
               {[
                 { id: 'neon', name: 'NIGHT CITY NEON', color: 'border-[#00F0FF] text-[#00F0FF]' },
                 { id: 'ember', name: 'EMBER CYBER', color: 'border-[#FF6B00] text-[#FF6B00]' },
-                { id: 'matrix', name: 'MATRIX CORE', color: 'border-[#00FF66] text-[#00FF66]' }
+                { id: 'matrix', name: 'MATRIX CORE', color: 'border-[#00FF66] text-[#00FF66]' },
+                { id: 'amber', name: 'VT100 PHOSPHOR AMBER', color: 'border-[#FFB000] text-[#FFB000]' },
+                { id: 'chiba', name: 'DEAD CHANNEL TV', color: 'border-[#00F0FF] text-[#38BDF8]' }
               ].map((theme) => (
                 <button
                   key={theme.id}
                   onClick={() => { playClickSFX(); updateSettings({ colorTheme: theme.id as ColorTheme }); }}
-                  className={`p-3 rounded-xl border text-center font-bold transition-all ${
+                  className={`p-2.5 rounded-xl border text-center font-bold transition-all text-[11px] ${
                     settings.colorTheme === theme.id
                       ? `${theme.color} bg-[#1A1A24] shadow-[0_0_15px_rgba(0,240,255,0.2)]`
                       : 'border-[#2A2A36] text-slate-400 hover:text-white'
@@ -112,7 +114,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {/* Section 2: Weather Station Location */}
+          {/* Section 2: Hacker VFX Toggles */}
+          <div>
+            <div className="text-slate-300 font-bold mb-2 uppercase text-[10px] tracking-wider text-[#00FF66] flex items-center space-x-1">
+              <Binary size={12} />
+              <span>CYBERPUNK MATRIX ANIMATION EFFECTS</span>
+            </div>
+            <div className="flex items-center space-x-3 bg-[#1A1A24]/60 border border-[#2A2A36] rounded-xl p-3">
+              <button
+                onClick={() => { playToggleSFX(); updateSettings({ matrixRainEnabled: !settings.matrixRainEnabled }); }}
+                className={`px-3 py-1.5 rounded-lg font-bold border flex items-center space-x-2 transition-all ${
+                  settings.matrixRainEnabled
+                    ? 'bg-emerald-950/80 border-emerald-500/50 text-[#00FF66]'
+                    : 'bg-[#121218] border-[#2A2A36] text-slate-500'
+                }`}
+              >
+                <Binary size={14} />
+                <span>MATRIX DIGITAL RAIN: {settings.matrixRainEnabled ? 'ACTIVE' : 'DISABLED'}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: Weather Station Location */}
           <div>
             <div className="text-slate-300 font-bold mb-2 uppercase text-[10px] tracking-wider text-[#FF6B00] flex items-center space-x-1">
               <Sun size={12} />
@@ -141,7 +164,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {/* Section 3: Widget Visibility Manager */}
+          {/* Section 4: Widget Visibility Manager */}
           <div>
             <div className="text-slate-300 font-bold mb-2 uppercase text-[10px] tracking-wider text-[#FF007F] flex items-center justify-between">
               <span>WIDGET VISIBILITY MANAGER ({ALL_WIDGET_ROSTER.length - (settings.hiddenWidgets || []).length} / {ALL_WIDGET_ROSTER.length} ACTIVE)</span>
@@ -168,7 +191,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, o
             </div>
           </div>
 
-          {/* Section 4: Data Import / Export Backup */}
+          {/* Section 5: Data Import / Export Backup */}
           <div>
             <div className="text-slate-300 font-bold mb-2 uppercase text-[10px] tracking-wider text-[#00FF66]">
               LAYOUT & DASHBOARD DATA BACKUP

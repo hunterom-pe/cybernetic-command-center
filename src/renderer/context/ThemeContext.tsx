@@ -23,6 +23,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   use24HourClock: false,
   isGridLocked: false,
   sfxEnabled: true,
+  matrixRainEnabled: true,
   weatherCity: 'phoenix',
   hiddenWidgets: []
 };
@@ -48,6 +49,20 @@ const THEME_PALETTES: Record<ColorTheme, ThemeContextType['colors']> = {
     accent: '#0099FF',
     border: '#00FF66',
     glow: 'rgba(0, 255, 102, 0.4)'
+  },
+  amber: {
+    primary: '#FFB000',
+    secondary: '#FF7700',
+    accent: '#FFD700',
+    border: '#FFB000',
+    glow: 'rgba(255, 176, 0, 0.4)'
+  },
+  chiba: {
+    primary: '#00F0FF',
+    secondary: '#808A87',
+    accent: '#38BDF8',
+    border: '#00F0FF',
+    glow: 'rgba(0, 240, 255, 0.35)'
   }
 };
 
@@ -75,7 +90,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const exportConfig = () => {
     const configData = {
       settings,
-      layout: localStorage.getItem('hud_grid_layout') ? JSON.parse(localStorage.getItem('hud_grid_layout')!) : null,
+      layout: localStorage.getItem('hud_grid_layout_v3') ? JSON.parse(localStorage.getItem('hud_grid_layout_v3')!) : null,
       tasks: localStorage.getItem('hud_directive_tasks') ? JSON.parse(localStorage.getItem('hud_directive_tasks')!) : null,
       habits: localStorage.getItem('hud_habit_streaks') ? JSON.parse(localStorage.getItem('hud_habit_streaks')!) : null,
       quickLinks: localStorage.getItem('hud_web_quick_links') ? JSON.parse(localStorage.getItem('hud_web_quick_links')!) : null,
@@ -86,7 +101,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `command-center-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `nexus-os-backup-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -98,7 +113,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSettings({ ...DEFAULT_SETTINGS, ...data.settings });
       }
       if (data.layout) {
-        localStorage.setItem('hud_grid_layout', JSON.stringify(data.layout));
+        localStorage.setItem('hud_grid_layout_v3', JSON.stringify(data.layout));
       }
       if (data.tasks) {
         localStorage.setItem('hud_directive_tasks', JSON.stringify(data.tasks));

@@ -1,4 +1,4 @@
-export type ColorTheme = 'neon' | 'ember' | 'matrix';
+export type ColorTheme = 'neon' | 'ember' | 'matrix' | 'amber' | 'chiba';
 export type BannerImage = 'rainy-alley' | 'neo-tokyo' | 'flight-deck';
 export type WeatherCity = 'phoenix' | 'nyc' | 'madrid' | 'tokyo' | 'london';
 
@@ -78,6 +78,7 @@ export interface AppSettings {
   use24HourClock: boolean;
   isGridLocked: boolean;
   sfxEnabled: boolean;
+  matrixRainEnabled: boolean;
   weatherCity: WeatherCity;
   hiddenWidgets: string[];
 }

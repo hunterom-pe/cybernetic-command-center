@@ -8,6 +8,7 @@ import { HeaderBanner } from './components/common/HeaderBanner';
 import { SettingsModal } from './components/common/SettingsModal';
 import { CommandBar } from './components/common/CommandBar';
 import { FixedCyberBackground } from './components/common/FixedCyberBackground';
+import { MatrixDigitalRain } from './components/common/MatrixDigitalRain';
 import { QuickLink, DirectiveItem } from './types/hud';
 
 // All 25 Functional Widgets
@@ -139,6 +140,9 @@ const MainContent: React.FC = () => {
     <div className="relative min-h-screen flex flex-col bg-[#08080C] text-slate-100 selection:bg-[#00F0FF]/30">
       {/* Fixed Static Cyberpunk Grid Background & Reticles */}
       <FixedCyberBackground />
+
+      {/* Animated Matrix Digital Rain Canvas */}
+      <MatrixDigitalRain />
 
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Edge-to-Edge Panoramic City Header Banner */}
