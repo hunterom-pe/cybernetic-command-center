@@ -12,7 +12,7 @@ import { MatrixDigitalRain } from './components/common/MatrixDigitalRain';
 import { CyberScreensaver } from './components/common/CyberScreensaver';
 import { QuickLink, DirectiveItem } from './types/hud';
 
-// All 27 Functional Widgets
+// All 33 Functional Widgets
 import { DualMissionClocks } from './components/widgets/DualMissionClocks';
 import { SystemPerformanceHUD } from './components/widgets/SystemPerformanceHUD';
 import { MarketWatchHUD } from './components/widgets/MarketWatchHUD';
@@ -42,12 +42,20 @@ import { NeuralAIWidget } from './components/widgets/NeuralAIWidget';
 import { VoightKampffWidget } from './components/widgets/VoightKampffWidget';
 import { XenomorphTrackerWidget } from './components/widgets/XenomorphTrackerWidget';
 
+// 6 New 3D Visualizer Widgets
+import { Ship3DWireframeWidget } from './components/widgets/Ship3DWireframeWidget';
+import { SolarSystemOrbitalWidget } from './components/widgets/SolarSystemOrbitalWidget';
+import { HoloGyroscopeWidget } from './components/widgets/HoloGyroscopeWidget';
+import { HypercubeTesseractWidget } from './components/widgets/HypercubeTesseractWidget';
+import { QuantumParticleSwarmWidget } from './components/widgets/QuantumParticleSwarmWidget';
+import { TopographicTerrainRadarWidget } from './components/widgets/TopographicTerrainRadarWidget';
+
 const ReactGridLayout = WidthProvider(RGL);
 
-// Custom Requested Layout:
+// Custom Requested Layout (Interspersed 3D Visualizers):
 // Row 0: All System Processes & Telemetry (sys_perf, sys_processes, clocks)
 // Row 2: Weather, Spotify, Calendar
-// Rows 4+: Organized Tactical Groups
+// Rows 4+: Intersperse 3D Visualizers to break up text grids!
 const DEFAULT_LAYOUT: Layout[] = [
   // ROW 0: ALL SYSTEM PROCESSES & TELEMETRY AT TOP
   { i: 'sys_perf', x: 0, y: 0, w: 4, h: 2, minW: 3, minH: 2 },
@@ -59,38 +67,50 @@ const DEFAULT_LAYOUT: Layout[] = [
   { i: 'spotify', x: 4, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
   { i: 'calendar', x: 8, y: 2, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ROW 4: MARKETS, CRYPTO & NETWORK TELEMETRY
+  // ROW 4: MARKETS, CRYPTO & 3D SHIP WIREFRAME
   { i: 'markets', x: 0, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'crypto', x: 4, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'network_speed', x: 8, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'ship_wireframe', x: 4, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'crypto', x: 8, y: 4, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ROW 6: GITHUB & CYBER NEWS RSS FEED
-  { i: 'github', x: 0, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'tech_news', x: 6, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
+  // ROW 6: NETWORK SPEED, SOLAR SYSTEM ORBITAL & GITHUB
+  { i: 'network_speed', x: 0, y: 6, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'solar_orbital', x: 4, y: 6, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'github', x: 8, y: 6, w: 4, h: 2, minW: 3, minH: 2 },
 
-  // ROW 8: TERMINAL CLI, NEURAL AI & AIRSPACE RADAR
-  { i: 'terminal', x: 0, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'neural_ai', x: 6, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
-  { i: 'airspace_radar', x: 0, y: 10, w: 12, h: 2, minW: 6, minH: 2 },
+  // ROW 8: CYBER NEWS RSS & 3D GYROSCOPE
+  { i: 'tech_news', x: 0, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: 'holo_gyro', x: 6, y: 8, w: 6, h: 2, minW: 4, minH: 2 },
 
-  // ROW 12: XENOMORPH TRACKER, VOIGHT-KAMPFF & POMODORO
-  { i: 'xenomorph_tracker', x: 0, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'voight_kampff', x: 4, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'pomodoro', x: 8, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  // ROW 10: TERMINAL CLI & NEURAL AI
+  { i: 'terminal', x: 0, y: 10, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: 'neural_ai', x: 6, y: 10, w: 6, h: 2, minW: 4, minH: 2 },
 
-  // ROW 14: DIRECTIVES, STAGING & AMBIENT AUDIO
-  { i: 'directives', x: 0, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'staging', x: 4, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'ambient', x: 8, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
+  // ROW 12: AIRSPACE RADAR
+  { i: 'airspace_radar', x: 0, y: 12, w: 12, h: 2, minW: 6, minH: 2 },
 
-  // ROWS 16+: PRODUCTIVITY, MINDSET & GRATITUDE
-  { i: 'milestone', x: 0, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'launcher', x: 4, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'clipboard', x: 8, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'habits', x: 0, y: 18, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'stoic', x: 4, y: 18, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'horoscope', x: 8, y: 18, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'gratitude', x: 0, y: 20, w: 12, h: 2, minW: 4, minH: 2 }
+  // ROW 14: XENOMORPH TRACKER, 4D TESSERACT & VOIGHT-KAMPFF
+  { i: 'xenomorph_tracker', x: 0, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'tesseract', x: 4, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'voight_kampff', x: 8, y: 14, w: 4, h: 2, minW: 3, minH: 2 },
+
+  // ROW 16: POMODORO, QUANTUM SWARM & DIRECTIVES
+  { i: 'pomodoro', x: 0, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'particle_swarm', x: 4, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'directives', x: 8, y: 16, w: 4, h: 2, minW: 3, minH: 2 },
+
+  // ROW 18: TERRAIN RADAR & STAGING
+  { i: 'terrain_radar', x: 0, y: 18, w: 6, h: 2, minW: 4, minH: 2 },
+  { i: 'staging', x: 6, y: 18, w: 6, h: 2, minW: 4, minH: 2 },
+
+  // ROWS 20+: AUDIO, PRODUCTIVITY & MINDSET
+  { i: 'ambient', x: 0, y: 20, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'milestone', x: 4, y: 20, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'launcher', x: 8, y: 20, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'clipboard', x: 0, y: 22, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'habits', x: 4, y: 22, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'stoic', x: 8, y: 22, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'horoscope', x: 0, y: 24, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'gratitude', x: 4, y: 24, w: 8, h: 2, minW: 4, minH: 2 }
 ];
 
 const MainContent: React.FC = () => {
@@ -112,7 +132,6 @@ const MainContent: React.FC = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       resetIdleTimer();
-      // Hotkey: Cmd + Shift + S or Ctrl + Shift + S
       if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 's') {
         e.preventDefault();
         setIsScreensaverActive((prev) => !prev);
@@ -134,7 +153,7 @@ const MainContent: React.FC = () => {
   }, []);
 
   const [layout, setLayout] = useState<Layout[]>(() => {
-    const saved = localStorage.getItem('hud_grid_layout_v6');
+    const saved = localStorage.getItem('hud_grid_layout_v7');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -145,12 +164,12 @@ const MainContent: React.FC = () => {
   const [tasks, setTasks] = useState<DirectiveItem[]>([]);
 
   useEffect(() => {
-    localStorage.setItem('hud_grid_layout_v6', JSON.stringify(layout));
+    localStorage.setItem('hud_grid_layout_v7', JSON.stringify(layout));
   }, [layout]);
 
   const handleResetLayout = () => {
     setLayout(DEFAULT_LAYOUT);
-    localStorage.removeItem('hud_grid_layout_v6');
+    localStorage.removeItem('hud_grid_layout_v7');
   };
 
   const hiddenSet = new Set(settings.hiddenWidgets || []);
@@ -163,17 +182,23 @@ const MainContent: React.FC = () => {
     spotify: <SpotifyNowPlaying />,
     calendar: <AppleCalendarFeed />,
     markets: <MarketWatchHUD />,
+    ship_wireframe: <Ship3DWireframeWidget />,
     crypto: <CryptoTelemetryWatch />,
     network_speed: <NetworkSpeedWidget />,
+    solar_orbital: <SolarSystemOrbitalWidget />,
     github: <GitHubTelemetryWidget />,
     tech_news: <TechNewsRSSWidget />,
+    holo_gyro: <HoloGyroscopeWidget />,
     terminal: <TerminalCLIWidget />,
     neural_ai: <NeuralAIWidget />,
     airspace_radar: <AirspaceRadarWidget />,
     xenomorph_tracker: <XenomorphTrackerWidget />,
+    tesseract: <HypercubeTesseractWidget />,
     voight_kampff: <VoightKampffWidget />,
     pomodoro: <PomodoroSprintHUD />,
+    particle_swarm: <QuantumParticleSwarmWidget />,
     directives: <CurrentWeekDirectives onTasksChange={(t) => setTasks(t)} />,
+    terrain_radar: <TopographicTerrainRadarWidget />,
     staging: <NextWeekStaging />,
     ambient: <AmbientSoundGenerator />,
     milestone: <MilestoneCountdown />,
