@@ -114,16 +114,16 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
           </div>
         </div>
 
-        {/* Off-World Colony Advertising Ticker Banner */}
-        <div className="bg-[#121218]/80 border border-[#FF9900]/30 rounded-lg p-2 font-mono text-[10px] text-amber-300 backdrop-blur-md flex items-center space-x-2 overflow-hidden my-auto">
-          <span className="bg-[#FF9900] text-black font-extrabold px-2 py-0.5 rounded text-[9px] shrink-0">OFF-WORLD ADVERTS</span>
-          <div className="truncate">
-            "A new life awaits you in the Off-World colonies! A chance to begin again in a golden land of opportunity and adventure!"
+        {/* Bottom Banner Title, Subtitle & Off-World Adverts Ticker */}
+        <div className="space-y-2 mt-auto">
+          {/* Off-World Colony Advertising Ticker Banner */}
+          <div className="bg-[#121218]/90 border border-[#FF9900]/40 rounded-lg px-2.5 py-1 font-mono text-[10px] text-amber-300 backdrop-blur-md flex items-center space-x-2 overflow-hidden max-w-2xl">
+            <span className="bg-[#FF9900] text-black font-extrabold px-1.5 py-0.2 rounded text-[8px] shrink-0 uppercase">OFF-WORLD ADVERTS</span>
+            <div className="truncate italic">
+              "A new life awaits you in the Off-World colonies! A chance to begin again in a golden land of opportunity..."
+            </div>
           </div>
-        </div>
 
-        {/* Bottom Banner Title & Subtitle */}
-        <div className="space-y-1">
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight font-sans text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] glitch-hover cursor-pointer">
             NEXUS <span style={{ color: colors.primary }}>OS</span>
           </h1>
