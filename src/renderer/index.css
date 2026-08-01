@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: #00F0FF;
+    --color-secondary: #FF007F;
+    --color-accent: #FF6B00;
+    --color-success: #00FF66;
+    --color-danger: #FF3B30;
+  }
+
+  body {
+    background-color: #08080C;
+    background-image: radial-gradient(#1A1A24 1px, transparent 1px);
+    background-size: 16px 16px;
+    color: #F1F5F9;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* Custom Cyberpunk Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(8, 8, 12, 0.8);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(42, 42, 54, 0.8);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-primary);
+}
+
+/* Scanline Effect */
+.scanline-overlay {
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0),
+    rgba(255,255,255,0) 50%,
+    rgba(0, 240, 255, 0.02) 50%,
+    rgba(0, 240, 255, 0.02)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+}
+
+/* Rain Effect Overlay */
+.rain-container {
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(0, 240, 255, 0.08));
+  background-size: 1px 30px;
+  pointer-events: none;
+  animation: rain 1s linear infinite;
+}
+
+@keyframes rain {
+  0% { background-position: 0 0; }
+  100% { background-position: 10px 100px; }
+}
+
+/* React Grid Layout Overrides */
+.react-grid-item > .react-resizable-handle {
+  width: 14px;
+  height: 14px;
+  right: 4px;
+  bottom: 4px;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  content: '';
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 6px;
+  height: 6px;
+  border-right: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  opacity: 0.6;
+}
+
+.react-grid-item:hover > .react-resizable-handle::after {
+  opacity: 1;
+  box-shadow: 0 0 6px var(--color-primary);
+}
+
+.react-grid-placeholder {
+  background: rgba(0, 240, 255, 0.08) !important;
+  border: 1px dashed #00F0FF !important;
+  border-radius: 0.75rem !important;
+  opacity: 0.8 !important;
+}
+
+/* Glass Card Helper */
+.glass-hud {
+  background: rgba(18, 18, 24, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid #2A2A36;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glass-hud:hover {
+  border-color: rgba(0, 240, 255, 0.3);
+}
+
+/* Monospace Glow Utility */
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.6);
+}
+.glow-magenta {
+  text-shadow: 0 0 10px rgba(255, 0, 127, 0.6);
+}
+.glow-orange {
+  text-shadow: 0 0 10px rgba(255, 107, 0, 0.6);
+}
+.glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 102, 0.6);
+}

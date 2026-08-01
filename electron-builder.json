@@ -1,0 +1,19 @@
+{
+  "appId": "com.nexusos.cyberhud",
+  "productName": "NEXUS OS",
+  "copyright": "Copyright © 2026 NEXUS OS",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist-main/**/*",
+    "dist-renderer/**/*"
+  ],
+  "mac": {
+    "category": "public.app-category.utilities",
+    "icon": "assets/icon.png",
+    "target": ["dmg", "zip"],
+    "hardenedRuntime": true,
+    "gatekeeperAssess": false
+  }
+}

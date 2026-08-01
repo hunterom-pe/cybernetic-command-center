@@ -1,0 +1,355 @@
+import { useState, useEffect, useRef } from 'react';
+
+export type AmbientSoundType = 'rain' | 'synth' | 'cockpit' | 'keyboard' | 'computer' | 'city';
+
+export function useAmbientAudio() {
+  const [activeSounds, setActiveSounds] = useState<Record<AmbientSoundType, boolean>>({
+    rain: false,
+    synth: false,
+    cockpit: false,
+    keyboard: false,
+    computer: false,
+    city: false
+  });
+  const [volume, setVolumeState] = useState<number>(60);
+
+  const audioCtxRef = useRef<AudioContext | null>(null);
+  const masterGainRef = useRef<GainNode | null>(null);
+
+  const gainNodesRef = useRef<Record<AmbientSoundType, GainNode | null>>({
+    rain: null,
+    synth: null,
+    cockpit: null,
+    keyboard: null,
+    computer: null,
+    city: null
+  });
+
+  const intervalTimersRef = useRef<Record<string, any>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(intervalTimersRef.current).forEach((t) => clearInterval(t));
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, []);
+
+  const initAudioCtx = () => {
+    if (!audioCtxRef.current) {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const ctx = new AudioCtx();
+      const masterGain = ctx.createGain();
+      masterGain.gain.value = volume / 100;
+      masterGain.connect(ctx.destination);
+
+      audioCtxRef.current = ctx;
+      masterGainRef.current = masterGain;
+
+      // Build Generator Nodes
+      gainNodesRef.current.rain = createRainGenerator(ctx, masterGain);
+      gainNodesRef.current.synth = createSynthHumGenerator(ctx, masterGain);
+      gainNodesRef.current.cockpit = createCockpitNoiseGenerator(ctx, masterGain);
+      gainNodesRef.current.keyboard = createMechKeyboardGenerator(ctx, masterGain, intervalTimersRef);
+      gainNodesRef.current.computer = createComputerDataGenerator(ctx, masterGain, intervalTimersRef);
+      gainNodesRef.current.city = createCyberCityGenerator(ctx, masterGain);
+    }
+
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+  };
+
+  const toggleSound = (type: AmbientSoundType) => {
+    initAudioCtx();
+
+    setActiveSounds((prev) => {
+      const nextState = !prev[type];
+      const targetGainNode = gainNodesRef.current[type];
+
+      if (targetGainNode && audioCtxRef.current) {
+        const now = audioCtxRef.current.currentTime;
+        targetGainNode.gain.cancelScheduledValues(now);
+        targetGainNode.gain.setValueAtTime(targetGainNode.gain.value, now);
+        targetGainNode.gain.linearRampToValueAtTime(
+          nextState ? (type === 'synth' || type === 'computer' ? 0.25 : 0.35) : 0,
+          now + 0.5
+        );
+      }
+
+      return { ...prev, [type]: nextState };
+    });
+  };
+
+  const setVolume = (val: number) => {
+    setVolumeState(val);
+    if (masterGainRef.current && audioCtxRef.current) {
+      const now = audioCtxRef.current.currentTime;
+      masterGainRef.current.gain.cancelScheduledValues(now);
+      masterGainRef.current.gain.setValueAtTime(masterGainRef.current.gain.value, now);
+      masterGainRef.current.gain.linearRampToValueAtTime(val / 100, now + 0.1);
+    }
+  };
+
+  return {
+    activeSounds,
+    toggleSound,
+    volume,
+    setVolume
+  };
+}
+
+// 1. Procedural Pink Noise Rain Generator
+function createRainGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const bufferSize = ctx.sampleRate * 2;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+  for (let i = 0; i < bufferSize; i++) {
+    const white = Math.random() * 2 - 1;
+    b0 = 0.99886 * b0 + white * 0.0555179;
+    b1 = 0.99332 * b1 + white * 0.0750759;
+    b2 = 0.96900 * b2 + white * 0.1538520;
+    b3 = 0.86650 * b3 + white * 0.3104856;
+    b4 = 0.55000 * b4 + white * 0.5329522;
+    b5 = -0.7616 * b5 - white * 0.0168980;
+    output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+    output[i] *= 0.08;
+    b6 = white * 0.115926;
+  }
+
+  const whiteNoiseSource = ctx.createBufferSource();
+  whiteNoiseSource.buffer = noiseBuffer;
+  whiteNoiseSource.loop = true;
+
+  const bandpass = ctx.createBiquadFilter();
+  bandpass.type = 'bandpass';
+  bandpass.frequency.value = 1000;
+  bandpass.Q.value = 0.8;
+
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+
+  whiteNoiseSource.connect(bandpass);
+  bandpass.connect(gainNode);
+  gainNode.connect(destination);
+
+  whiteNoiseSource.start();
+  return gainNode;
+}
+
+// 2. Procedural Synth Hum Generator
+function createSynthHumGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+
+  osc1.type = 'sawtooth';
+  osc1.frequency.value = 55;
+
+  osc2.type = 'sine';
+  osc2.frequency.value = 110.5;
+
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 240;
+  filter.Q.value = 3.0;
+
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+
+  osc1.connect(filter);
+  osc2.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(destination);
+
+  osc1.start();
+  osc2.start();
+  return gainNode;
+}
+
+// 3. Procedural Cockpit White Noise Generator
+function createCockpitNoiseGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const bufferSize = ctx.sampleRate * 2;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = (Math.random() * 2 - 1) * 0.05;
+  }
+
+  const whiteNoiseSource = ctx.createBufferSource();
+  whiteNoiseSource.buffer = noiseBuffer;
+  whiteNoiseSource.loop = true;
+
+  const highpass = ctx.createBiquadFilter();
+  highpass.type = 'highpass';
+  highpass.frequency.value = 400;
+
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+
+  whiteNoiseSource.connect(highpass);
+  highpass.connect(gainNode);
+  gainNode.connect(destination);
+
+  whiteNoiseSource.start();
+  return gainNode;
+}
+
+// 4. Procedural Mechanical Keyboard Typing Generator
+function createMechKeyboardGenerator(
+  ctx: AudioContext,
+  destination: GainNode,
+  timers: { current: Record<string, any> }
+): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  const triggerKeyClick = () => {
+    if (gainNode.gain.value <= 0.01) return;
+    const now = ctx.currentTime;
+
+    // Click Noise Transient
+    const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.004));
+    }
+
+    const noiseSrc = ctx.createBufferSource();
+    noiseSrc.buffer = noiseBuf;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 2200 + Math.random() * 800;
+    filter.Q.value = 2.5;
+
+    const keyGain = ctx.createGain();
+    keyGain.gain.setValueAtTime(0.15 + Math.random() * 0.1, now);
+    keyGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+
+    noiseSrc.connect(filter);
+    filter.connect(keyGain);
+    keyGain.connect(gainNode);
+    noiseSrc.start(now);
+
+    // Resonant Switch Bottom-out Thunk
+    const thunkOsc = ctx.createOscillator();
+    thunkOsc.type = 'triangle';
+    thunkOsc.frequency.setValueAtTime(140 + Math.random() * 40, now);
+    thunkOsc.frequency.exponentialRampToValueAtTime(40, now + 0.03);
+
+    const thunkGain = ctx.createGain();
+    thunkGain.gain.setValueAtTime(0.2, now);
+    thunkGain.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+    thunkOsc.connect(thunkGain);
+    thunkGain.connect(gainNode);
+    thunkOsc.start(now);
+    thunkOsc.stop(now + 0.035);
+  };
+
+  timers.current.keyboard = setInterval(() => {
+    if (Math.random() > 0.3) {
+      triggerKeyClick();
+      // Occasional rapid double-stroke
+      if (Math.random() > 0.6) {
+        setTimeout(triggerKeyClick, 70 + Math.random() * 50);
+      }
+    }
+  }, 180);
+
+  return gainNode;
+}
+
+// 5. Procedural Sci-Fi Computer Data Processing Bleeps Generator
+function createComputerDataGenerator(
+  ctx: AudioContext,
+  destination: GainNode,
+  timers: { current: Record<string, any> }
+): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  const triggerDataBleep = () => {
+    if (gainNode.gain.value <= 0.01) return;
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    osc.type = Math.random() > 0.5 ? 'sine' : 'square';
+
+    const freq = 1200 + Math.floor(Math.random() * 6) * 400;
+    osc.frequency.setValueAtTime(freq, now);
+
+    const bleepGain = ctx.createGain();
+    bleepGain.gain.setValueAtTime(0.06, now);
+    bleepGain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+    osc.connect(bleepGain);
+    bleepGain.connect(gainNode);
+    osc.start(now);
+    osc.stop(now + 0.045);
+  };
+
+  timers.current.computer = setInterval(() => {
+    if (Math.random() > 0.4) {
+      triggerDataBleep();
+      if (Math.random() > 0.5) {
+        setTimeout(triggerDataBleep, 60);
+      }
+    }
+  }, 320);
+
+  return gainNode;
+}
+
+// 6. Procedural Bustling Cyberpunk City Ambience Generator
+function createCyberCityGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  // Sub-bass Hover Traffic Traffic Rumble
+  const subOsc1 = ctx.createOscillator();
+  const subOsc2 = ctx.createOscillator();
+  subOsc1.type = 'sawtooth';
+  subOsc1.frequency.value = 38;
+  subOsc2.type = 'sine';
+  subOsc2.frequency.value = 42;
+
+  const lowpass = ctx.createBiquadFilter();
+  lowpass.type = 'lowpass';
+  lowpass.frequency.value = 160;
+
+  subOsc1.connect(lowpass);
+  subOsc2.connect(lowpass);
+  lowpass.connect(gainNode);
+  subOsc1.start();
+  subOsc2.start();
+
+  // High Wind Panning Layer
+  const bufferSize = ctx.sampleRate * 2;
+  const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const output = noiseBuffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    output[i] = (Math.random() * 2 - 1) * 0.04;
+  }
+
+  const windSrc = ctx.createBufferSource();
+  windSrc.buffer = noiseBuffer;
+  windSrc.loop = true;
+
+  const bandpass = ctx.createBiquadFilter();
+  bandpass.type = 'bandpass';
+  bandpass.frequency.value = 650;
+  bandpass.Q.value = 1.2;
+
+  windSrc.connect(bandpass);
+  bandpass.connect(gainNode);
+  windSrc.start();
+
+  return gainNode;
+}
