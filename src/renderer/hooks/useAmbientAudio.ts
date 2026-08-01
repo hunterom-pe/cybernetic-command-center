@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 
-export type AmbientSoundType = 'rain' | 'synth' | 'cockpit' | 'keyboard' | 'computer' | 'city';
+export type AmbientSoundType = 'rain' | 'synth' | 'cockpit' | 'keyboard' | 'computer' | 'city' | 'spinner' | 'vangelis';
 
 export function useAmbientAudio() {
   const [activeSounds, setActiveSounds] = useState<Record<AmbientSoundType, boolean>>({
@@ -9,7 +9,9 @@ export function useAmbientAudio() {
     cockpit: false,
     keyboard: false,
     computer: false,
-    city: false
+    city: false,
+    spinner: false,
+    vangelis: false
   });
   const [volume, setVolumeState] = useState<number>(60);
 
@@ -22,7 +24,9 @@ export function useAmbientAudio() {
     cockpit: null,
     keyboard: null,
     computer: null,
-    city: null
+    city: null,
+    spinner: null,
+    vangelis: null
   });
 
   const intervalTimersRef = useRef<Record<string, any>>({});
@@ -54,6 +58,8 @@ export function useAmbientAudio() {
       gainNodesRef.current.keyboard = createMechKeyboardGenerator(ctx, masterGain, intervalTimersRef);
       gainNodesRef.current.computer = createComputerDataGenerator(ctx, masterGain, intervalTimersRef);
       gainNodesRef.current.city = createCyberCityGenerator(ctx, masterGain);
+      gainNodesRef.current.spinner = createSpinnerHoverGenerator(ctx, masterGain);
+      gainNodesRef.current.vangelis = createVangelisPadGenerator(ctx, masterGain);
     }
 
     if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
@@ -73,7 +79,7 @@ export function useAmbientAudio() {
         targetGainNode.gain.cancelScheduledValues(now);
         targetGainNode.gain.setValueAtTime(targetGainNode.gain.value, now);
         targetGainNode.gain.linearRampToValueAtTime(
-          nextState ? (type === 'synth' || type === 'computer' ? 0.25 : 0.35) : 0,
+          nextState ? (type === 'synth' || type === 'vangelis' ? 0.22 : 0.35) : 0,
           now + 0.5
         );
       }
@@ -212,7 +218,6 @@ function createMechKeyboardGenerator(
     if (gainNode.gain.value <= 0.01) return;
     const now = ctx.currentTime;
 
-    // Click Noise Transient
     const noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 0.02, ctx.sampleRate);
     const data = noiseBuf.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
@@ -236,7 +241,6 @@ function createMechKeyboardGenerator(
     keyGain.connect(gainNode);
     noiseSrc.start(now);
 
-    // Resonant Switch Bottom-out Thunk
     const thunkOsc = ctx.createOscillator();
     thunkOsc.type = 'triangle';
     thunkOsc.frequency.setValueAtTime(140 + Math.random() * 40, now);
@@ -255,7 +259,6 @@ function createMechKeyboardGenerator(
   timers.current.keyboard = setInterval(() => {
     if (Math.random() > 0.3) {
       triggerKeyClick();
-      // Occasional rapid double-stroke
       if (Math.random() > 0.6) {
         setTimeout(triggerKeyClick, 70 + Math.random() * 50);
       }
@@ -312,7 +315,6 @@ function createCyberCityGenerator(ctx: AudioContext, destination: GainNode): Gai
   gainNode.gain.value = 0;
   gainNode.connect(destination);
 
-  // Sub-bass Hover Traffic Traffic Rumble
   const subOsc1 = ctx.createOscillator();
   const subOsc2 = ctx.createOscillator();
   subOsc1.type = 'sawtooth';
@@ -330,7 +332,6 @@ function createCyberCityGenerator(ctx: AudioContext, destination: GainNode): Gai
   subOsc1.start();
   subOsc2.start();
 
-  // High Wind Panning Layer
   const bufferSize = ctx.sampleRate * 2;
   const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
   const output = noiseBuffer.getChannelData(0);
@@ -350,6 +351,62 @@ function createCyberCityGenerator(ctx: AudioContext, destination: GainNode): Gai
   windSrc.connect(bandpass);
   bandpass.connect(gainNode);
   windSrc.start();
+
+  return gainNode;
+}
+
+// 7. Blade Runner Spinner Hover Turbine Engine Generator
+function createSpinnerHoverGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  osc1.type = 'sawtooth';
+  osc1.frequency.value = 62;
+  osc2.type = 'sine';
+  osc2.frequency.value = 124;
+
+  const lowpass = ctx.createBiquadFilter();
+  lowpass.type = 'lowpass';
+  lowpass.frequency.value = 220;
+  lowpass.Q.value = 4.0;
+
+  osc1.connect(lowpass);
+  osc2.connect(lowpass);
+  lowpass.connect(gainNode);
+
+  osc1.start();
+  osc2.start();
+
+  return gainNode;
+}
+
+// 8. Blade Runner Vangelis CS-80 Brass Synth Pad Generator
+function createVangelisPadGenerator(ctx: AudioContext, destination: GainNode): GainNode {
+  const gainNode = ctx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(destination);
+
+  // CS-80 Detuned Sawtooth Trio
+  const root = 130.81; // C3
+  const freqs = [root, root * 1.498, root * 1.997]; // C3, G3, C4
+
+  freqs.forEach((f) => {
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.value = f + (Math.random() - 0.5) * 1.5;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = 480;
+    filter.Q.value = 2.0;
+
+    osc.connect(filter);
+    filter.connect(gainNode);
+    osc.start();
+  });
 
   return gainNode;
 }

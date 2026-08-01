@@ -11,7 +11,7 @@ import { FixedCyberBackground } from './components/common/FixedCyberBackground';
 import { MatrixDigitalRain } from './components/common/MatrixDigitalRain';
 import { QuickLink, DirectiveItem } from './types/hud';
 
-// All 25 Functional Widgets
+// All 26 Functional Widgets
 import { DualMissionClocks } from './components/widgets/DualMissionClocks';
 import { SystemPerformanceHUD } from './components/widgets/SystemPerformanceHUD';
 import { MarketWatchHUD } from './components/widgets/MarketWatchHUD';
@@ -39,6 +39,9 @@ import { AirspaceRadarWidget } from './components/widgets/AirspaceRadarWidget';
 import { TerminalCLIWidget } from './components/widgets/TerminalCLIWidget';
 import { NeuralAIWidget } from './components/widgets/NeuralAIWidget';
 
+// Blade Runner Voight-Kampff Test Widget
+import { VoightKampffWidget } from './components/widgets/VoightKampffWidget';
+
 const ReactGridLayout = WidthProvider(RGL);
 
 // Organized into 5 Tactical Zones with Varied Sizes
@@ -60,12 +63,13 @@ const DEFAULT_LAYOUT: Layout[] = [
   { i: 'neural_ai', x: 6, y: 6, w: 6, h: 2, minW: 4, minH: 2 },
   { i: 'airspace_radar', x: 0, y: 8, w: 12, h: 2, minW: 6, minH: 2 },
 
-  // ZONE 4: FOCUS SPRINTS, AGENDA & DIRECTIVES (Rows 10 & 12)
-  { i: 'calendar', x: 0, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'directives', x: 4, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'weather', x: 8, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
-  { i: 'pomodoro', x: 0, y: 12, w: 6, h: 2, minW: 3, minH: 2 },
-  { i: 'staging', x: 6, y: 12, w: 6, h: 2, minW: 4, minH: 2 },
+  // ZONE 4: BLADE RUNNER, FOCUS SPRINTS & DIRECTIVES (Rows 10 & 12)
+  { i: 'voight_kampff', x: 0, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'calendar', x: 4, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'directives', x: 8, y: 10, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'weather', x: 0, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'pomodoro', x: 4, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
+  { i: 'staging', x: 8, y: 12, w: 4, h: 2, minW: 3, minH: 2 },
 
   // ZONE 5: AUDIO, PRODUCTIVITY & MINDSET (Rows 14, 16 & 18)
   { i: 'spotify', x: 0, y: 14, w: 6, h: 2, minW: 4, minH: 2 },
@@ -85,7 +89,7 @@ const MainContent: React.FC = () => {
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
 
   const [layout, setLayout] = useState<Layout[]>(() => {
-    const saved = localStorage.getItem('hud_grid_layout_v3');
+    const saved = localStorage.getItem('hud_grid_layout_v4');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
@@ -96,12 +100,12 @@ const MainContent: React.FC = () => {
   const [tasks, setTasks] = useState<DirectiveItem[]>([]);
 
   useEffect(() => {
-    localStorage.setItem('hud_grid_layout_v3', JSON.stringify(layout));
+    localStorage.setItem('hud_grid_layout_v4', JSON.stringify(layout));
   }, [layout]);
 
   const handleResetLayout = () => {
     setLayout(DEFAULT_LAYOUT);
-    localStorage.removeItem('hud_grid_layout_v3');
+    localStorage.removeItem('hud_grid_layout_v4');
   };
 
   const hiddenSet = new Set(settings.hiddenWidgets || []);
@@ -118,6 +122,7 @@ const MainContent: React.FC = () => {
     terminal: <TerminalCLIWidget />,
     neural_ai: <NeuralAIWidget />,
     airspace_radar: <AirspaceRadarWidget />,
+    voight_kampff: <VoightKampffWidget />,
     calendar: <AppleCalendarFeed />,
     directives: <CurrentWeekDirectives onTasksChange={(t) => setTasks(t)} />,
     weather: <PhoenixWeatherStation />,

@@ -1,4 +1,4 @@
-export type ColorTheme = 'neon' | 'ember' | 'matrix' | 'amber' | 'chiba';
+export type ColorTheme = 'neon' | 'ember' | 'matrix' | 'amber' | 'chiba' | 'voight-kampff';
 export type BannerImage = 'rainy-alley' | 'neo-tokyo' | 'flight-deck';
 export type WeatherCity = 'phoenix' | 'nyc' | 'madrid' | 'tokyo' | 'london';
 

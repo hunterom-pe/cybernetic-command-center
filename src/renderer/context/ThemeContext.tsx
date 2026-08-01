@@ -63,6 +63,13 @@ const THEME_PALETTES: Record<ColorTheme, ThemeContextType['colors']> = {
     accent: '#38BDF8',
     border: '#00F0FF',
     glow: 'rgba(0, 240, 255, 0.35)'
+  },
+  'voight-kampff': {
+    primary: '#FF9900',
+    secondary: '#FF0055',
+    accent: '#00E5FF',
+    border: '#FF9900',
+    glow: 'rgba(255, 153, 0, 0.45)'
   }
 };
 

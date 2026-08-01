@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary } from 'lucide-react';
+import { Settings, Command, Lock, Unlock, Volume2, VolumeX, Calendar, Binary, Eye } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
 
@@ -29,10 +29,10 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
   return (
     <header className="relative w-full h-[480px] select-none">
       {/* Header Content */}
-      <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 max-w-[1920px] mx-auto pb-12">
+      <div className="relative z-10 flex flex-col justify-between h-full p-4 sm:p-6 max-w-[1920px] mx-auto pb-10">
         {/* Top Control Bar */}
         <div className="flex items-center justify-between">
-          {/* App Badge, Date & Status */}
+          {/* App Badge, Date & Tyrell Replicant Telemetry */}
           <div className="flex items-center space-x-3">
             <div className="font-mono text-xs font-bold bg-[#121218]/90 border px-3 py-1 rounded shadow-lg flex items-center space-x-2 backdrop-blur-md" style={{ color: colors.primary, borderColor: `${colors.primary}60` }}>
               <span className="w-2 h-2 rounded-full bg-[#00FF66] animate-pulse" />
@@ -45,8 +45,10 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
               <span>{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: '2-digit', year: 'numeric' }).toUpperCase()}</span>
             </div>
 
-            <div className="hidden md:flex font-mono text-[10px] text-slate-400 space-x-2 bg-[#121218]/80 px-2.5 py-1 rounded border border-[#2A2A36]">
-              <span>STATUS: <strong className="text-[#00FF66]">ONO-SENDAI CYBERDECK ONLINE</strong></span>
+            {/* Tyrell Corp Replicant Serial Registration Badge */}
+            <div className="hidden lg:flex font-mono text-[10px] text-amber-400 font-bold bg-[#121218]/90 border border-[#FF9900]/40 px-2.5 py-1 rounded shadow-lg items-center space-x-1.5 backdrop-blur-md">
+              <Eye size={12} className="text-[#FF9900]" />
+              <span>TYRELL CORP // MODEL: NEXUS-6 // REPLICANT ID: N6MAA10816</span>
             </div>
           </div>
 
@@ -112,15 +114,23 @@ export const HeaderBanner: React.FC<HeaderBannerProps> = ({ onOpenSettings, onOp
           </div>
         </div>
 
+        {/* Off-World Colony Advertising Ticker Banner */}
+        <div className="bg-[#121218]/80 border border-[#FF9900]/30 rounded-lg p-2 font-mono text-[10px] text-amber-300 backdrop-blur-md flex items-center space-x-2 overflow-hidden my-auto">
+          <span className="bg-[#FF9900] text-black font-extrabold px-2 py-0.5 rounded text-[9px] shrink-0">OFF-WORLD ADVERTS</span>
+          <div className="truncate">
+            "A new life awaits you in the Off-World colonies! A chance to begin again in a golden land of opportunity and adventure!"
+          </div>
+        </div>
+
         {/* Bottom Banner Title & Subtitle */}
-        <div className="space-y-1 mt-auto">
+        <div className="space-y-1">
           <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight font-sans text-white drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)] glitch-hover cursor-pointer">
             NEXUS <span style={{ color: colors.primary }}>OS</span>
           </h1>
           <p className="font-mono text-xs sm:text-sm text-slate-300 flex items-center space-x-2 drop-shadow-md">
             <span className="text-[#FF007F] font-bold">CYBERDECK MATRIX OPERATING SYSTEM</span>
             <span>•</span>
-            <span>25 HUD TELEMETRY NODES ACTIVE</span>
+            <span>26 HUD TELEMETRY NODES ACTIVE</span>
           </p>
         </div>
       </div>
