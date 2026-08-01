@@ -1,7 +1,7 @@
-import { exec } from 'child_process';
+import { execFile } from 'child_process';
 import util from 'util';
 
-const execAsync = util.promisify(exec);
+const execFileAsync = util.promisify(execFile);
 
 export interface SpotifyTrackState {
   isRunning: boolean;
@@ -41,7 +41,7 @@ end if
   `;
 
   try {
-    const { stdout } = await execAsync(`osascript -e '${script}'`);
+    const { stdout } = await execFileAsync('osascript', ['-e', script]);
     const output = stdout.trim();
 
     if (output === 'NOT_RUNNING' || !output.includes('|||')) {
@@ -97,7 +97,7 @@ export async function controlSpotify(action: 'playpause' | 'next' | 'previous' |
   }
 
   try {
-    await execAsync(`osascript -e '${script}'`);
+    await execFileAsync('osascript', ['-e', script]);
     return true;
   } catch (err) {
     return false;
