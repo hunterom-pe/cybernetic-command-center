@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { ShieldAlert, Clock, Calendar, Activity, Radio, Cpu, Volume2 } from 'lucide-react';
+import { ShieldAlert, Calendar } from 'lucide-react';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
 
 interface CyberScreensaverProps {
@@ -14,6 +14,9 @@ export const CyberScreensaver: React.FC<CyberScreensaverProps> = ({ isActive, on
   const [timeStr, setTimeStr] = useState('');
   const [dateStr, setDateStr] = useState('');
   const [tickerIndex, setTickerIndex] = useState(0);
+
+  const canWakeRef = useRef(false);
+  const mountTimeRef = useRef(0);
 
   const diagnosticMessages = [
     'MU/TH/UR 6000 STANDBY PROTOCOL ACTIVE // ALL NODES OPERATIONAL',
@@ -44,22 +47,33 @@ export const CyberScreensaver: React.FC<CyberScreensaverProps> = ({ isActive, on
     return () => clearInterval(interval);
   }, [isActive]);
 
-  // Wake Listener on Mouse Movement or Keypress
+  // Wake Grace Period (600ms protection so clicking STANDBY button doesn't instantly close screensaver)
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      canWakeRef.current = false;
+      return;
+    }
 
-    const handleUserActivity = () => {
+    mountTimeRef.current = Date.now();
+    const timer = setTimeout(() => {
+      canWakeRef.current = true;
+    }, 600);
+
+    const handleUserActivity = (e: Event) => {
+      // Ignore wake events during the 600ms grace period after clicking STANDBY
+      if (!canWakeRef.current || Date.now() - mountTimeRef.current < 600) {
+        return;
+      }
       onWake();
     };
 
     window.addEventListener('mousemove', handleUserActivity);
     window.addEventListener('keydown', handleUserActivity);
-    window.addEventListener('click', handleUserActivity);
 
     return () => {
+      clearTimeout(timer);
       window.removeEventListener('mousemove', handleUserActivity);
       window.removeEventListener('keydown', handleUserActivity);
-      window.removeEventListener('click', handleUserActivity);
     };
   }, [isActive, onWake]);
 
@@ -67,7 +81,12 @@ export const CyberScreensaver: React.FC<CyberScreensaverProps> = ({ isActive, on
 
   return (
     <div
-      onClick={() => { playClickSFX(); onWake(); }}
+      onClick={(e) => {
+        if (Date.now() - mountTimeRef.current > 600) {
+          playClickSFX();
+          onWake();
+        }
+      }}
       className="fixed inset-0 z-50 flex flex-col justify-between p-8 sm:p-12 bg-black/90 backdrop-blur-xl animate-fade-in select-none cursor-pointer overflow-hidden font-mono"
     >
       {/* Background Neon Glow Pulse */}
