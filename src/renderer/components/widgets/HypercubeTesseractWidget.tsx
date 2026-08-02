@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../common/GlassCard';
 import { WidgetHeader } from '../common/WidgetHeader';
-import { Box, Layers } from 'lucide-react';
+import { Box } from 'lucide-react';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
-
-type PolytopeShape = 'tesseract' | 'octahedron' | 'icosahedron';
 
 export const HypercubeTesseractWidget: React.FC = () => {
   const { playClickSFX } = useCyberSFX();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [shape, setShape] = useState<PolytopeShape>('tesseract');
+  const [shape, setShape] = useState<'tesseract' | 'octahedron'>('tesseract');
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -29,14 +27,11 @@ export const HypercubeTesseractWidget: React.FC = () => {
       ctx.clearRect(0, 0, w, h);
 
       if (shape === 'tesseract') {
-        // Inner and Outer Cubes
-        const outerSize = 38;
-        const innerSize = 18;
-
+        const outerSize = 28;
+        const innerSize = 14;
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
 
-        // Outer Cube Vertices
         const outerNodes = [
           { x: -outerSize, y: -outerSize, z: -outerSize },
           { x: outerSize, y: -outerSize, z: -outerSize },
@@ -48,7 +43,6 @@ export const HypercubeTesseractWidget: React.FC = () => {
           { x: -outerSize, y: outerSize, z: outerSize }
         ];
 
-        // Inner Cube Vertices
         const innerNodes = [
           { x: -innerSize, y: -innerSize, z: -innerSize },
           { x: innerSize, y: -innerSize, z: -innerSize },
@@ -64,11 +58,7 @@ export const HypercubeTesseractWidget: React.FC = () => {
           let rx = n.x * cos - n.z * sin;
           let rz = n.x * sin + n.z * cos;
           let ry = n.y * cos - rz * sin;
-
-          return {
-            x: cx + rx,
-            y: cy + ry
-          };
+          return { x: cx + rx, y: cy + ry };
         };
 
         const projOuter = outerNodes.map(project);
@@ -80,7 +70,6 @@ export const HypercubeTesseractWidget: React.FC = () => {
           [0, 4], [1, 5], [2, 6], [3, 7]
         ];
 
-        // Draw Outer Cube
         ctx.strokeStyle = '#00F0FF';
         ctx.lineWidth = 1.5;
         cubeEdges.forEach(([p1, p2]) => {
@@ -90,7 +79,6 @@ export const HypercubeTesseractWidget: React.FC = () => {
           ctx.stroke();
         });
 
-        // Draw Inner Cube
         ctx.strokeStyle = '#FF007F';
         ctx.lineWidth = 1.5;
         cubeEdges.forEach(([p1, p2]) => {
@@ -100,7 +88,6 @@ export const HypercubeTesseractWidget: React.FC = () => {
           ctx.stroke();
         });
 
-        // Draw Hypercube Connecting Rays
         ctx.strokeStyle = 'rgba(0, 255, 102, 0.6)';
         ctx.lineWidth = 1;
         for (let i = 0; i < 8; i++) {
@@ -110,8 +97,7 @@ export const HypercubeTesseractWidget: React.FC = () => {
           ctx.stroke();
         }
       } else {
-        // Octahedron
-        const r = 36;
+        const r = 26;
         const pts = [
           { x: 0, y: -r, z: 0 },
           { x: r, y: 0, z: 0 },
@@ -126,7 +112,6 @@ export const HypercubeTesseractWidget: React.FC = () => {
 
         const proj = pts.map((p) => {
           let rx = p.x * cos - p.z * sin;
-          let rz = p.x * sin + p.z * cos;
           return { x: cx + rx, y: cy + p.y };
         });
 
@@ -153,9 +138,9 @@ export const HypercubeTesseractWidget: React.FC = () => {
     <GlassCard>
       <WidgetHeader
         icon={Box}
-        prefix="QUANTUM GEOMETRY"
-        title="4D HYPERCUBE TESSERACT ENGINE"
-        badge="GEOMETRY OK"
+        prefix="QUANTUM MATRIX"
+        title="4D TESSERACT ENGINE"
+        badge="4D: STABLE"
         badgeColor="magenta"
         actions={
           <button
@@ -167,31 +152,30 @@ export const HypercubeTesseractWidget: React.FC = () => {
         }
       />
 
-      <div className="grid grid-cols-12 gap-3 h-full items-center">
+      <div className="grid grid-cols-12 gap-2 h-full items-center overflow-hidden">
         {/* Left: Tesseract Canvas */}
-        <div className="col-span-6 bg-[#121218] border border-[#FF007F]/30 rounded-xl p-2 flex items-center justify-center h-full">
-          <canvas ref={canvasRef} width={140} height={110} className="w-full h-full object-contain" />
+        <div className="col-span-5 bg-[#121218] border border-[#FF007F]/30 rounded-lg p-1 flex items-center justify-center h-[90px]">
+          <canvas ref={canvasRef} width={110} height={75} className="w-full h-full object-contain" />
         </div>
 
         {/* Right: Sub-Space Dimension Details */}
-        <div className="col-span-6 flex flex-col justify-between h-full space-y-1 py-0.5 font-mono text-[10px]">
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 space-y-1">
+        <div className="col-span-7 flex flex-col justify-between h-[90px] font-mono text-[9px]">
+          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 space-y-0.5">
             <div className="text-[#FF007F] font-bold flex justify-between">
               <span>DIMENSION</span>
-              <span>4D MATRIX</span>
+              <span>4D TESSERACT</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-slate-300 text-[8px]">
               <span>VERTICES:</span>
               <span className="font-bold text-white">16 NODES</span>
             </div>
-            <div className="flex justify-between text-slate-300">
+            <div className="flex justify-between text-slate-300 text-[8px]">
               <span>EDGES:</span>
               <span className="font-bold text-white">32 LINES</span>
             </div>
-          </div>
-
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 font-mono text-[9px] text-slate-400">
-            SUB-SPACE TESSERACT PROJECTION: STABLE
+            <div className="text-slate-400 text-[7.5px] pt-0.5 border-t border-[#2A2A36] truncate">
+              PROJECTION MATRIX: STABLE
+            </div>
           </div>
         </div>
       </div>

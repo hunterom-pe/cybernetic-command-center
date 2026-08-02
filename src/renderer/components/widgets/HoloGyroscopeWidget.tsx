@@ -31,7 +31,7 @@ export const HoloGyroscopeWidget: React.FC = () => {
       ctx.strokeStyle = '#00F0FF';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(0, 0, 36, 0, Math.PI * 2);
+      ctx.arc(0, 0, 30, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
@@ -43,7 +43,7 @@ export const HoloGyroscopeWidget: React.FC = () => {
       ctx.strokeStyle = '#FF007F';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(0, 0, 26, 0, Math.PI * 2);
+      ctx.arc(0, 0, 22, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
@@ -55,14 +55,14 @@ export const HoloGyroscopeWidget: React.FC = () => {
       ctx.strokeStyle = '#00FF66';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.arc(0, 0, 14, 0, Math.PI * 2);
       ctx.stroke();
       ctx.restore();
 
       // Central Gyro Core Node
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 3, 0, Math.PI * 2);
       ctx.fill();
 
       angle1 += 0.02;
@@ -86,14 +86,14 @@ export const HoloGyroscopeWidget: React.FC = () => {
         badgeColor="green"
       />
 
-      <div className="grid grid-cols-12 gap-2 h-full items-center">
+      <div className="grid grid-cols-12 gap-2 h-full items-center overflow-hidden">
         {/* Left: 3D Holographic Gyro Canvas */}
-        <div className="col-span-5 bg-[#121218] border border-[#00F0FF]/30 rounded-lg p-1 flex items-center justify-center h-full">
-          <canvas ref={canvasRef} width={120} height={95} className="w-full h-full object-contain" />
+        <div className="col-span-5 bg-[#121218] border border-[#00F0FF]/30 rounded-lg p-1 flex items-center justify-center h-[90px]">
+          <canvas ref={canvasRef} width={110} height={75} className="w-full h-full object-contain" />
         </div>
 
         {/* Right: Artificial Gravity Telemetry */}
-        <div className="col-span-7 flex flex-col justify-between h-full space-y-1 py-0.5 font-mono text-[9px]">
+        <div className="col-span-7 flex flex-col justify-between h-[90px] font-mono text-[9px]">
           <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 space-y-0.5">
             <div className="text-[#00FF66] font-bold flex justify-between">
               <span>ARTIFICIAL GRAVITY</span>
@@ -111,10 +111,9 @@ export const HoloGyroscopeWidget: React.FC = () => {
               <span>RING 3 (XZ):</span>
               <span className="font-bold text-[#00FF66]">ACTIVE</span>
             </div>
-          </div>
-
-          <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-1.5 font-mono text-[8px] text-slate-400 truncate">
-            INERTIAL GUIDANCE ENGINE: NOMINAL
+            <div className="text-slate-400 text-[7.5px] pt-0.5 border-t border-[#2A2A36] truncate">
+              INERTIAL ENGINE: NOMINAL
+            </div>
           </div>
         </div>
       </div>
