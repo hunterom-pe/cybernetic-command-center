@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '../common/GlassCard';
 import { WidgetHeader } from '../common/WidgetHeader';
-import { Radio, AlertTriangle, ShieldAlert, Cpu, Volume2, VolumeX } from 'lucide-react';
+import { Radio, AlertTriangle, Cpu, Volume2, VolumeX } from 'lucide-react';
 import { useCyberSFX } from '../../hooks/useCyberSFX';
 
 export const XenomorphTrackerWidget: React.FC = () => {
-  const { playClickSFX, playToggleSFX } = useCyberSFX();
+  const { playToggleSFX } = useCyberSFX();
   const [distance, setDistance] = useState(14.8);
-  const [isThreatActive, setIsThreatActive] = useState(true);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [soundEnabled, setSoundEnabled] = useState(false); // OFF by default per user request
   const [viewTab, setViewTab] = useState<'tracker' | 'synth'>('tracker');
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -29,7 +28,6 @@ export const XenomorphTrackerWidget: React.FC = () => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
 
-      // M314 Motion Tracker Signature High Beep (1850Hz)
       osc.type = 'sine';
       osc.frequency.setValueAtTime(1850, now);
 
@@ -49,9 +47,11 @@ export const XenomorphTrackerWidget: React.FC = () => {
       setDistance((prev) => {
         let next = prev - (0.4 + Math.random() * 0.8);
         if (next <= 1.8) {
-          next = 18.2; // reset sweep
+          next = 18.2;
         }
-        playTrackerPing();
+        if (soundEnabled) {
+          playTrackerPing();
+        }
         return parseFloat(next.toFixed(1));
       });
     }, 1800);
@@ -117,7 +117,7 @@ export const XenomorphTrackerWidget: React.FC = () => {
       ctx.fill();
       ctx.restore();
 
-      // Xenomorph Blip (Red/Orange Glowing Contact)
+      // Xenomorph Blip
       const blipDistanceRatio = distance / 20;
       const blipAngle = Math.PI * 0.25;
       const bx = cx + Math.cos(blipAngle) * (radius * blipDistanceRatio);
@@ -183,7 +183,6 @@ export const XenomorphTrackerWidget: React.FC = () => {
 
           {/* Right: Proximity Distance & Telemetry */}
           <div className="col-span-7 flex flex-col justify-between h-full py-0.5">
-            {/* Distance Box */}
             <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 space-y-1">
               <div className="font-mono text-[9px] text-slate-400 uppercase flex items-center justify-between">
                 <span>TARGET PROXIMITY</span>
@@ -201,7 +200,6 @@ export const XenomorphTrackerWidget: React.FC = () => {
               </div>
             </div>
 
-            {/* MU/TH/UR Threat Status */}
             <div className="bg-[#1A1A24]/70 border border-[#2A2A36] rounded-lg p-2 font-mono text-[9px] space-y-1">
               <div className="text-amber-400 font-bold flex justify-between">
                 <span>MU/TH/UR 6000 TELEMETRY</span>
@@ -214,7 +212,6 @@ export const XenomorphTrackerWidget: React.FC = () => {
           </div>
         </div>
       ) : (
-        /* Synthetic Human Diagnostic Tab (David 8 / Ash) */
         <div className="flex flex-col justify-between h-full bg-[#1A1A24]/60 border border-[#2A2A36] rounded-lg p-3 space-y-2 font-mono text-xs">
           <div className="flex items-center justify-between border-b border-[#2A2A36] pb-1">
             <span className="font-bold text-amber-400 flex items-center space-x-1">
