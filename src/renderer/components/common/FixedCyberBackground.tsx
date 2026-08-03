@@ -1,4 +1,5 @@
 import React from 'react';
+import cityBanner from '../../assets/city_banner.jpg';
 
 export const FixedCyberBackground: React.FC = () => {
   return (
@@ -9,7 +10,7 @@ export const FixedCyberBackground: React.FC = () => {
       {/* Locked Fixed Cityscape Banner Image (Height 480px - 50% Taller) */}
       <div className="absolute top-0 left-0 right-0 h-[480px] overflow-hidden">
         <img
-          src="./assets/city_banner.jpg"
+          src={cityBanner}
           alt="Cyberpunk City Skyline"
           className="w-full h-full object-cover object-center filter brightness-85 contrast-110 opacity-75"
         />
