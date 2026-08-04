@@ -18,7 +18,6 @@ export interface CalendarEvent {
 
 export async function openCalendarPrivacySettings(): Promise<boolean> {
   try {
-    // Try URL scheme via Electron shell
     await shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_Calendars');
     return true;
   } catch (err) {
@@ -38,7 +37,6 @@ export async function openCalendarPrivacySettings(): Promise<boolean> {
 
 export async function requestCalendarPermission(): Promise<boolean> {
   try {
-    // Launching Apple Calendar app triggers native macOS Privacy & Security permission prompt
     await execFileAsync('open', ['-a', 'Calendar']);
     return true;
   } catch (err) {
@@ -54,22 +52,29 @@ tell application "Calendar"
   set minutes of todayStart to 0
   set seconds of todayStart to 0
   
-  set tomorrowEnd to todayStart + (2 * 86400)
-  
-  set eventList to {}
+  set rangeEnd to todayStart + (7 * 86400)
+  set eventStr to ""
   repeat with aCal in calendars
     try
-      set calEvents to (every event of aCal whose start date >= todayStart and start date < tomorrowEnd)
+      set calEvents to (every event of aCal whose start date >= todayStart and start date < rangeEnd)
       repeat with anEvent in calEvents
-        set eventName to summary of anEvent
-        set eventStart to start date of anEvent as string
-        set eventEnd to end date of anEvent as string
-        set calName to name of aCal
-        set end of eventList to (eventName & "|||" & eventStart & "|||" & eventEnd & "|||" & calName)
+        set eName to summary of anEvent
+        set sDate to start date of anEvent
+        set cName to name of aCal
+        
+        set sYear to (year of sDate) as string
+        set sMonth to (month of sDate as integer) as string
+        set sDay to (day of sDate) as string
+        set sSec to time of sDate
+        set sH to (sSec div 3600) as string
+        set sM to ((sSec mod 3600) div 60) as string
+        
+        set timeFormatted to sYear & "-" & sMonth & "-" & sDay & " " & sH & ":" & sM
+        set eventStr to eventStr & eName & "|||" & timeFormatted & "|||" & cName & "<<<EVENT>>>"
       end repeat
     end try
   end repeat
-  return eventList
+  return eventStr
 end tell
   `;
 
@@ -77,85 +82,61 @@ end tell
     const { stdout } = await execFileAsync('osascript', ['-e', script]);
     const output = stdout.trim();
     if (!output) {
-      return getFallbackCalendarEvents();
+      return [];
     }
 
-    const lines = output.split(', ');
+    const rawEvents = output.split('<<<EVENT>>>').filter((item) => item.trim().length > 0);
     const events: CalendarEvent[] = [];
     const now = new Date();
     const todayStr = now.toDateString();
 
-    lines.forEach((line, index) => {
-      const parts = line.split('|||');
-      if (parts.length >= 4) {
-        const title = parts[0];
-        const startDateRaw = parts[1];
-        const endDateRaw = parts[2];
-        const calendarName = parts[3];
+    rawEvents.forEach((raw, index) => {
+      const parts = raw.split('|||');
+      if (parts.length >= 3) {
+        const title = parts[0].trim();
+        const dateStr = parts[1].trim(); // Format: "2026-8-3 14:30"
+        const calendarName = parts[2].trim();
 
-        const parsedStart = new Date(startDateRaw);
-        const parsedEnd = new Date(endDateRaw);
+        const [dPart, tPart] = dateStr.split(' ');
+        if (dPart && tPart) {
+          const [year, month, day] = dPart.split('-').map((n) => parseInt(n, 10));
+          const [hour, minute] = tPart.split(':').map((n) => parseInt(n, 10));
 
-        const isToday = parsedStart.toDateString() === todayStr;
-        const timeString = isNaN(parsedStart.getTime())
-          ? '09:00 AM'
-          : parsedStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const eventDate = new Date(year, month - 1, day, hour, minute || 0);
 
-        events.push({
-          id: `cal-evt-${index}-${Date.now()}`,
-          title: title || 'Scheduled Directive',
-          startDate: isNaN(parsedStart.getTime()) ? new Date().toISOString() : parsedStart.toISOString(),
-          endDate: isNaN(parsedEnd.getTime()) ? new Date().toISOString() : parsedEnd.toISOString(),
-          timeString,
-          isToday,
-          calendarName: calendarName || 'Personal',
-          color: calendarName.toLowerCase().includes('work') ? '#FF007F' : '#00F0FF'
-        });
+          let timeFormatted = 'All Day';
+          if (hour > 0 || (minute && minute > 0)) {
+            timeFormatted = eventDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          }
+
+          const isToday = eventDate.toDateString() === todayStr;
+
+          // Color coding by calendar name
+          let color = '#00F0FF';
+          const calLower = calendarName.toLowerCase();
+          if (calLower.includes('work')) color = '#FF007F';
+          else if (calLower.includes('home')) color = '#00FF66';
+          else if (calLower.includes('mlb')) color = '#FF9900';
+
+          events.push({
+            id: `real-cal-${index}-${Date.now()}`,
+            title: title || 'Calendar Directive',
+            startDate: eventDate.toISOString(),
+            endDate: new Date(eventDate.getTime() + 3600000).toISOString(),
+            timeString: timeFormatted,
+            isToday,
+            calendarName,
+            color
+          });
+        }
       }
     });
 
-    return events.length > 0 ? events : getFallbackCalendarEvents();
+    // Sort by upcoming date & time
+    events.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+    return events;
   } catch (err) {
-    return getFallbackCalendarEvents();
+    return [];
   }
-}
-
-function getFallbackCalendarEvents(): CalendarEvent[] {
-  const now = new Date();
-  const today10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 10, 0, 0);
-  const today14 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 30, 0);
-  const tomorrow11 = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 11, 0, 0);
-
-  return [
-    {
-      id: 'cal-fb-1',
-      title: 'NEXUS OS Architecture & Security Review',
-      startDate: today10.toISOString(),
-      endDate: new Date(today10.getTime() + 3600000).toISOString(),
-      timeString: '10:00 AM',
-      isToday: true,
-      calendarName: 'Engineering',
-      color: '#00F0FF'
-    },
-    {
-      id: 'cal-fb-2',
-      title: 'Matrix Neural AI Pipeline Sync',
-      startDate: today14.toISOString(),
-      endDate: new Date(today14.getTime() + 2700000).toISOString(),
-      timeString: '02:30 PM',
-      isToday: true,
-      calendarName: 'AI Directives',
-      color: '#FF007F'
-    },
-    {
-      id: 'cal-fb-3',
-      title: 'Cyberspace Telemetry Audit',
-      startDate: tomorrow11.toISOString(),
-      endDate: new Date(tomorrow11.getTime() + 3600000).toISOString(),
-      timeString: '11:00 AM',
-      isToday: false,
-      calendarName: 'Operations',
-      color: '#FF6B00'
-    }
-  ];
 }
